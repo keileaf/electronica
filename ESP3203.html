@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP3203: Lectura de Potenciómetros | ESP32 + Shield GVS</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      /* Paleta estricta: Blanco, Grises, Azul y Cyan suave — versión atenuada */
+      --c-dark-gray: #7a7f87;
+      --c-mid-gray: #9aa0a8;
+      --c-blue-accent: #5aa9e6;
+      --c-blue-soft: #8ec8f2;
+      --c-cyan-light: #9fdfef;
+      --c-white: #f2f3f5;
+
+      --bg-main: #17181b;
+      --bg-sidebar: #17181b;
+      --bg-card: #1c1e22;
+      --bg-card-inner: #1c1e22;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-main);
+      color: #e4e6e9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      min-height: 100vh;
+      letter-spacing: 0.1px;
+    }
+    main { max-width: 1180px; }
+    .sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+    @media (min-width: 992px) {
+      .sidebar { min-height: 100vh; position: sticky; top: 0; }
+    }
+    .activity-btn {
+      text-align: left;
+      border-radius: 6px;
+      padding: 9px 12px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      color: var(--c-mid-gray);
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 2px solid transparent;
+      width: 100%;
+      text-decoration: none;
+      display: block;
+    }
+    .activity-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--c-white);
+    }
+    .activity-btn.active {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--c-white);
+      border-left: 2px solid var(--c-blue-accent);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .code-box {
+      background-color: #131417;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--c-cyan-light);
+      position: relative;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+    .badge-board {
+      background-color: transparent;
+      color: var(--c-mid-gray);
+      border: none;
+      padding-left: 0;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .nav-pills .nav-link {
+      color: var(--c-mid-gray);
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-right: 14px;
+      margin-bottom: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      background-color: transparent;
+    }
+    .nav-pills .nav-link:hover {
+      color: var(--c-white);
+      border-bottom-color: var(--border-light);
+    }
+    .nav-pills .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      font-weight: 600;
+      border-bottom-color: var(--c-cyan-light);
+    }
+    .nav-tabs .nav-link {
+      color: var(--c-mid-gray);
+      border: 1px solid transparent;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      border-color: transparent transparent var(--c-cyan-light) transparent;
+      font-weight: 600;
+    }
+    .pin-adc, .pin-pwr, .pin-gnd, .pin-warn, .pin-comm, .pin-c6, .pin-cam, .pin-gpio {
+      background-color: transparent;
+      border: none;
+      padding: 2px 0;
+      font-weight: 600;
+    }
+    .pin-adc { color: var(--c-blue-soft); }
+    .pin-pwr { color: var(--c-dark-gray); }
+    .pin-gnd { color: #b6bcc4; }
+    .pin-warn { color: var(--c-cyan-light); }
+    .pin-comm { color: var(--c-blue-accent); }
+    .pin-c6 { color: var(--c-cyan-light); }
+    .pin-cam { color: var(--c-mid-gray); }
+    .pin-gpio { color: var(--c-white); }
+
+    .svg-container {
+      max-width: 100%;
+      height: auto;
+    }
+    .text-cyan { color: var(--c-cyan-light) !important; }
+    .text-blue-light { color: var(--c-blue-soft) !important; }
+    .text-mid-gray { color: #a7acb4 !important; }
+
+    .step-card {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--c-blue-accent);
+      color: var(--c-white);
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+
+    .card { box-shadow: none !important; }
+    .row.g-3 { --bs-gutter-x: 1rem; --bs-gutter-y: 1rem; }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- ================= SIDEBAR ================= -->
+      <nav class="col-lg-3 col-xl-2 d-block sidebar py-3 px-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+          <span class="fs-5 fw-bold text-white"><i class="bi bi-journal-code text-cyan me-2"></i>ESP32 Lab</span>
+          <a href="index.html" class="btn btn-sm btn-outline-light text-cyan border-secondary" title="Volver al Hub">
+            <i class="bi bi-arrow-left"></i> Hub
+          </a>
+        </div>
+
+        <small class="text-uppercase text-mid-gray fw-bold px-1 mb-2 d-block" style="font-size: 0.72rem; letter-spacing: 1px;">
+          Actividades ESP32
+        </small>
+
+        <div class="nav flex-column mb-3">
+          <a href="ESP3201.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3201</div>
+            <div style="font-size: 0.75rem;">Gráfico de Puntos (Processing)</div>
+          </a>
+          <a href="ESP3202.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3202</div>
+            <div style="font-size: 0.75rem;">Gráfico de Líneas Continuas</div>
+          </a>
+          <a href="ESP3203.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3203</div>
+            <div style="font-size: 0.75rem;">Lectura de Potenciómetros (ADC)</div>
+          </a>
+          <a href="ESP3204.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3204</div>
+            <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- ================= CONTENIDO DE LA ACTIVIDAD ================= -->
+      <main class="col-lg-9 col-xl-10 px-3 px-md-4 py-3">
+        
+        <!-- Encabezado -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+          <div>
+            <span class="badge badge-board mb-1">Entradas Analógicas / ADC 12-bit</span>
+            <h2 class="h3 fw-bold text-white mb-0">ESP3203: Lectura de Potenciómetros en ESP32</h2>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <span class="badge badge-board px-3 py-2 fs-6">
+              <i class="bi bi-motherboard me-1 text-cyan"></i> ESP32 + Breakout Shield GVS
+            </span>
+          </div>
+        </div>
+
+        <!-- TARJETA DEL COMPONENTE -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="row align-items-center g-3">
+            <div class="col-md-3 col-lg-2 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100" height="100" style="background:transparent;">
+                <circle cx="60" cy="50" r="38" fill="#44474f" stroke="#8c8c8c" stroke-width="2"/>
+                <circle cx="60" cy="50" r="32" fill="#2c2e33" stroke="#666666"/>
+                <circle cx="60" cy="50" r="18" fill="#8c8c8c" stroke="#cfd4dc" stroke-width="1.5"/>
+                <rect x="58" y="32" width="4" height="36" fill="#383b42"/>
+                <rect x="42" y="48" width="36" height="4" fill="#383b42"/>
+                <circle cx="60" cy="50" r="7" fill="#6bbef9"/>
+                <rect x="35" y="80" width="50" height="12" rx="2" fill="#18191b" stroke="#44474f"/>
+                <rect x="40" y="92" width="6" height="24" rx="2" fill="#cbd5e1" stroke="#8c8c8c"/>
+                <rect x="57" y="92" width="6" height="24" rx="2" fill="#97e9ff" stroke="#2196f3"/>
+                <rect x="74" y="92" width="6" height="24" rx="2" fill="#cbd5e1" stroke="#8c8c8c"/>
+                <circle cx="43" cy="112" r="1.5" fill="#18191b"/>
+                <circle cx="60" cy="112" r="1.5" fill="#18191b"/>
+                <circle cx="77" cy="112" r="1.5" fill="#18191b"/>
+              </svg>
+            </div>
+            <div class="col-md-9 col-lg-10">
+              <h5 class="text-white mb-1">Potenciómetro Rotativo Lineal (10 kΩ)</h5>
+              <p class="small text-mid-gray mb-2">
+                Un potenciómetro es una resistencia variable mecánica de tres terminales. Los extremos se conectan a <strong>3.3V</strong> y <strong>GND</strong> formando un divisor de tensión. El terminal central (cursor) entrega un voltaje proporcional al giro de la perilla, el cual es medido por el conversor analógico a digital (ADC) del ESP32.
+              </p>
+              <div class="d-flex flex-wrap gap-2 small">
+                <span class="badge pin-pwr">Terminal 1: VCC (3.3V Riel V)</span>
+                <span class="badge pin-adc">Terminal Central: Señal S (Cursor analógico)</span>
+                <span class="badge pin-gnd">Terminal 3: GND (0V Riel G)</span>
+                <span class="badge badge-board">Resolución ADC: 12 bits (0 a 4095)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestañas Parte A y B -->
+        <ul class="nav nav-pills mb-3" id="partTabs">
+          <li class="nav-item">
+            <button class="nav-link active" id="tabPartA" onclick="setPart('A')">Parte A: 1 Potenciómetro (GPIO 32)</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tabPartB" onclick="setPart('B')">Parte B: 2 Potenciómetros (GPIO 32 y GPIO 33)</button>
+          </li>
+        </ul>
+
+        <!-- Ficha Técnica -->
+        <div class="row g-3 mb-4">
+          <!-- Diagrama de Conexión SVG -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-white mb-0" id="diagramTitle"><i class="bi bi-diagram-3-fill text-cyan me-2"></i>Diagrama de Conexión en Shield GVS</h6>
+                <span class="badge bg-secondary text-white">Lógica: 3.3V (12-bit)</span>
+              </div>
+              <div class="text-center py-2" id="svgContainer"></div>
+            </div>
+          </div>
+
+          <!-- Tabla de Mapeo de Pines -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <h6 class="text-white mb-2"><i class="bi bi-table text-cyan me-2"></i>Mapeo de Terminales en Shield (G-V-S)</h6>
+              <div class="table-responsive">
+                <table class="table table-dark table-bordered small align-middle mb-0">
+                  <thead class="table-secondary text-dark">
+                    <tr>
+                      <th>Componente</th>
+                      <th>Pin Potenciómetro</th>
+                      <th>Fila / Pin en Shield</th>
+                      <th>Línea Eléctrica</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pinTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="p-2 rounded bg-card border border-secondary mt-3">
+                <small class="text-cyan d-block fw-bold"><i class="bi bi-shield-exclamation me-1"></i> Consideración Eléctrica Obligatoria:</small>
+                <small class="text-mid-gray">
+                  El jumper amarillo selector del Shield debe colocarse en la posición <strong>3.3V</strong>. Conectar a 5V puede dañar permanentemente las entradas analógicas del ESP32.
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SIMULADOR DIDÁCTICO DEL ADC (12 BITS) ================= -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+            <div>
+              <h5 class="text-white mb-0"><i class="bi bi-sliders text-cyan me-2"></i>Simulador Didáctico: ¿Cómo convierte el ESP32 el giro en voltaje?</h5>
+              <small class="text-mid-gray">Mueve el potenciómetro virtual para ver cómo el ESP32 calcula los 12 bits y el voltaje en tiempo real.</small>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-md-0">
+              <button class="btn btn-sm btn-outline-info text-cyan" onclick="simularVoltaje(0)">0.0V (Mínimo)</button>
+              <button class="btn btn-sm btn-outline-light" onclick="simularVoltaje(2048)">1.65V (Centro)</button>
+              <button class="btn btn-sm btn-outline-warning" onclick="simularVoltaje(4095)">3.3V (Máximo)</button>
+            </div>
+          </div>
+
+          <!-- 3 Pasos Explicados con Sencillez -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">1</span>
+                  <h6 class="text-white mb-0">El Giro (Voltaje Físico)</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">El potenciómetro entrega un voltaje analógico continuo entre 0.0V y 3.3V según la posición de la perilla:</p>
+                <span class="badge pin-adc d-block text-center py-2 fs-6" id="simBadgeVoltaje">Voltaje: 1.65 V</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">2</span>
+                  <h6 class="text-white mb-0">La Lectura ADC (12 bits)</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">La función <code>analogRead(pin)</code> convierte ese voltaje en un número entero entre 0 y 4095 ($2^{12}-1$):</p>
+                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simBadgeADC">analogRead() = 2048</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">3</span>
+                  <h6 class="text-white mb-0">La Conversión Matemática</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">Para recuperar el valor en voltios en tu código, aplicas la regla de tres directa:</p>
+                <span class="badge pin-warn d-block text-center py-2 fs-6">voltaje = valorADC × (3.3 / 4095.0)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Deslizante Interactivo -->
+          <div class="p-3 rounded bg-main border border-secondary">
+            <label for="sliderPot" class="form-label text-white small fw-bold d-flex justify-content-between">
+              <span><i class="bi bi-arrow-left-right text-cyan me-1"></i> Girar Perilla del Potenciómetro Virtual:</span>
+              <span class="text-cyan fw-bold" id="lblSliderVal">Valor ADC: 2048 (50%)</span>
+            </label>
+            <input type="range" class="form-range" min="0" max="4095" value="2048" id="sliderPot" oninput="actualizarDesdeSlider(this.value)">
+            
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Línea que imprime el Monitor Serie:</small>
+                  <code class="text-cyan fw-bold" id="simTextoSerial">Valor ADC: 2048 | Voltaje: 1.65 V</code>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Estado del Canal ADC1:</small>
+                  <span class="text-white small fw-bold" id="simCanalEstado">GPIO 32 activo (Canal ADC1_CH4)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CÓDIGO FUENTE ARDUINO IDE -->
+        <div class="card bg-dark border-secondary p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-mid-gray">Código fuente para compilar y cargar mediante Arduino IDE (Velocidad: 115200 baudios)</span>
+            <button class="btn btn-sm btn-outline-light text-cyan" onclick="copyCode()"><i class="bi bi-clipboard me-1"></i> Copiar Código</button>
+          </div>
+          <pre class="code-box mb-0" id="codeBlock"><code>// Cargando código...</code></pre>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentPart = 'A';
+
+    const codes = {
+      A: {
+        diagramTitle: "Diagrama de Conexión: 1 Potenciómetro (Fila GPIO 32)",
+        code: 
+`// ==========================================================
+// ACTIVIDAD ESP3203 - PARTE A: 1 POTENCIÓMETRO EN ESP32 + SHIELD
+// Conectar el potenciómetro a la tríada G-V-S de la fila GPIO 32
+// Jumper de voltaje del Shield en posición 3.3V
+// ==========================================================
+
+const int pinPot = 32; // Pin analógico ADC1 canal 4
+
+void setup() {
+  Serial.begin(115200); // Velocidad estándar del ESP32
+  delay(1000);
+  Serial.println("--- Lectura Analógica ESP32 Iniciada ---");
+}
+
+void loop() {
+  // El conversor ADC del ESP32 entrega valores de 12 bits (0 a 4095)
+  int valorADC = analogRead(pinPot);
+  
+  // Conversión matemática a voltaje real (0.0V a 3.3V)
+  float voltaje = valorADC * (3.3 / 4095.0);
+  
+  // Impresión en el Monitor Serie
+  Serial.print("Valor ADC: ");
+  Serial.print(valorADC);
+  Serial.print(" | Voltaje: ");
+  Serial.print(voltaje, 2);
+  Serial.println(" V");
+  
+  delay(150); // Pausa de 150 ms entre lecturas
+}`,
+        pins: [
+          { comp: "Potenciómetro 1", pinComp: "Pin Central (Señal)", boardPin: "Pin S (Fila GPIO 32)", line: "Entrada Analógica (ADC1_CH4)" },
+          { comp: "Potenciómetro 1", pinComp: "Extremo 1 (VCC)", boardPin: "Pin V (Fila GPIO 32)", line: "Alimentación Riel V (3.3V)" },
+          { comp: "Potenciómetro 1", pinComp: "Extremo 2 (GND)", boardPin: "Pin G (Fila GPIO 32)", line: "Tierra Riel G (0V)" }
+        ]
+      },
+      B: {
+        diagramTitle: "Diagrama de Conexión: 2 Potenciómetros (GPIO 32 y GPIO 33)",
+        code: 
+`// ==========================================================
+// ACTIVIDAD ESP3203 - PARTE B: 2 POTENCIÓMETROS EN ESP32 + SHIELD
+// Potenciómetro 1 -> Fila G-V-S de GPIO 32 (ADC1_CH4)
+// Potenciómetro 2 -> Fila G-V-S de GPIO 33 (ADC1_CH5)
+// Jumper de voltaje del Shield en posición 3.3V
+// ==========================================================
+
+const int pinPot1 = 32; // ADC1 Canal 4
+const int pinPot2 = 33; // ADC1 Canal 5
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("--- Lectura Dual de Potenciómetros Iniciada ---");
+}
+
+void loop() {
+  // Lectura de ambos canales analógicos
+  int valor1 = analogRead(pinPot1);
+  int valor2 = analogRead(pinPot2);
+  
+  // Conversión individual a voltaje
+  float v1 = valor1 * (3.3 / 4095.0);
+  float v2 = valor2 * (3.3 / 4095.0);
+  
+  // Impresión simultánea formateada
+  Serial.print("POT 1 [GPIO 32]: ");
+  Serial.print(valor1);
+  Serial.print(" (");
+  Serial.print(v1, 2);
+  Serial.print("V)  |  ");
+  
+  Serial.print("POT 2 [GPIO 33]: ");
+  Serial.print(valor2);
+  Serial.print(" (");
+  Serial.print(v2, 2);
+  Serial.println("V)");
+  
+  delay(150);
+}`,
+        pins: [
+          { comp: "Potenciómetro 1", pinComp: "Pin Central (Señal)", boardPin: "Pin S (Fila GPIO 32)", line: "Entrada Analógica 1 (ADC1_CH4)" },
+          { comp: "Potenciómetro 1", pinComp: "Extremos VCC / GND", boardPin: "Pines V y G (Fila GPIO 32)", line: "Alimentación dedicada Pot 1 (3.3V / GND)" },
+          { comp: "Potenciómetro 2", pinComp: "Pin Central (Señal)", boardPin: "Pin S (Fila GPIO 33)", line: "Entrada Analógica 2 (ADC1_CH5)" },
+          { comp: "Potenciómetro 2", pinComp: "Extremos VCC / GND", boardPin: "Pines V y G (Fila GPIO 33)", line: "Alimentación dedicada Pot 2 (3.3V / GND)" }
+        ]
+      }
+    };
+
+    function setPart(part) {
+      currentPart = part;
+      document.getElementById('tabPartA').classList.toggle('active', part === 'A');
+      document.getElementById('tabPartB').classList.toggle('active', part === 'B');
+      render();
+    }
+
+    function render() {
+      const data = codes[currentPart];
+      document.getElementById('codeBlock').innerText = data.code;
+      document.getElementById('diagramTitle').innerHTML = `<i class="bi bi-diagram-3-fill text-cyan me-2"></i> ${data.diagramTitle}`;
+
+      let rows = '';
+      data.pins.forEach(p => {
+        rows += `<tr>
+          <td class="text-white fw-bold">${p.comp}</td>
+          <td>${p.pinComp}</td>
+          <td><span class="badge pin-adc">${p.boardPin}</span></td>
+          <td>${p.line}</td>
+        </tr>`;
+      });
+      document.getElementById('pinTableBody').innerHTML = rows;
+
+      if (currentPart === 'A') {
+        document.getElementById('simCanalEstado').innerText = "GPIO 32 activo (Canal ADC1_CH4)";
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 210" class="svg-container" style="background:#121315; border-radius:8px;">
+            <rect x="25" y="25" width="150" height="160" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+            <text x="100" y="52" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">ESP32 SHIELD</text>
+            <text x="100" y="68" fill="#6bbef9" font-size="9" text-anchor="middle">FILA GPIO 32</text>
+            
+            <circle cx="160" cy="95" r="4" fill="#6bbef9"/>
+            <text x="150" y="98" fill="#ffffff" font-size="9" text-anchor="end">V (3.3V)</text>
+            <circle cx="160" cy="120" r="4" fill="#97e9ff"/>
+            <text x="150" y="123" fill="#97e9ff" font-size="9" text-anchor="end">S (GPIO 32)</text>
+            <circle cx="160" cy="145" r="4" fill="#8c8c8c"/>
+            <text x="150" y="148" fill="#adb5bd" font-size="9" text-anchor="end">G (GND)</text>
+
+            <line x1="160" y1="95" x2="300" y2="95" stroke="#6bbef9" stroke-width="2"/>
+            <line x1="160" y1="120" x2="300" y2="120" stroke="#97e9ff" stroke-width="2"/>
+            <line x1="160" y1="145" x2="300" y2="145" stroke="#8c8c8c" stroke-width="2"/>
+
+            <rect x="300" y="45" width="130" height="120" rx="6" fill="#2c2e33" stroke="#8c8c8c" stroke-width="1.5"/>
+            <circle cx="375" cy="105" r="22" fill="#18191b" stroke="#97e9ff"/>
+            <text x="375" y="109" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">POT 1</text>
+            <circle cx="300" cy="95" r="4" fill="#6bbef9"/><text x="312" y="98" fill="#6bbef9" font-size="8">VCC</text>
+            <circle cx="300" cy="120" r="4" fill="#97e9ff"/><text x="312" y="123" fill="#97e9ff" font-size="8">SIG</text>
+            <circle cx="300" cy="145" r="4" fill="#8c8c8c"/><text x="312" y="148" fill="#adb5bd" font-size="8">GND</text>
+          </svg>
+        `;
+      } else {
+        document.getElementById('simCanalEstado').innerText = "GPIO 32 (ADC1_CH4) y GPIO 33 (ADC1_CH5) activos";
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 270" class="svg-container" style="background:#121315; border-radius:8px;">
+            <rect x="20" y="20" width="160" height="230" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+            <text x="100" y="42" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">ESP32 SHIELD</text>
+            <text x="100" y="56" fill="#6bbef9" font-size="8" text-anchor="middle">FILAS G-V-S DEDICADAS</text>
+            
+            <rect x="28" y="65" width="144" height="75" rx="4" fill="#18191b" stroke="#33373d"/>
+            <text x="34" y="77" fill="#6bbef9" font-size="7" font-weight="bold">TRÍADA GPIO 32</text>
+            <circle cx="165" cy="85" r="3.5" fill="#6bbef9"/><text x="156" y="88" fill="#ffffff" font-size="8" text-anchor="end">V (3.3V)</text>
+            <circle cx="165" cy="105" r="3.5" fill="#97e9ff"/><text x="156" y="108" fill="#97e9ff" font-size="8" text-anchor="end">S (IO 32)</text>
+            <circle cx="165" cy="125" r="3.5" fill="#8c8c8c"/><text x="156" y="128" fill="#adb5bd" font-size="8" text-anchor="end">G (GND)</text>
+
+            <rect x="28" y="150" width="144" height="75" rx="4" fill="#18191b" stroke="#33373d"/>
+            <text x="34" y="162" fill="#6bbef9" font-size="7" font-weight="bold">TRÍADA GPIO 33</text>
+            <circle cx="165" cy="170" r="3.5" fill="#6bbef9"/><text x="156" y="173" fill="#ffffff" font-size="8" text-anchor="end">V (3.3V)</text>
+            <circle cx="165" cy="190" r="3.5" fill="#97e9ff"/><text x="156" y="193" fill="#97e9ff" font-size="8" text-anchor="end">S (IO 33)</text>
+            <circle cx="165" cy="210" r="3.5" fill="#8c8c8c"/><text x="156" y="213" fill="#adb5bd" font-size="8" text-anchor="end">G (GND)</text>
+
+            <line x1="165" y1="85" x2="300" y2="85" stroke="#6bbef9" stroke-width="2"/>
+            <line x1="165" y1="105" x2="300" y2="105" stroke="#97e9ff" stroke-width="2"/>
+            <line x1="165" y1="125" x2="300" y2="125" stroke="#8c8c8c" stroke-width="2"/>
+
+            <line x1="165" y1="170" x2="300" y2="170" stroke="#6bbef9" stroke-width="2"/>
+            <line x1="165" y1="190" x2="300" y2="190" stroke="#97e9ff" stroke-width="2"/>
+            <line x1="165" y1="210" x2="300" y2="210" stroke="#8c8c8c" stroke-width="2"/>
+
+            <rect x="300" y="55" width="130" height="85" rx="6" fill="#2c2e33" stroke="#8c8c8c" stroke-width="1.5"/>
+            <circle cx="380" cy="97" r="18" fill="#18191b" stroke="#97e9ff"/>
+            <text x="380" y="101" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">POT 1</text>
+            <circle cx="300" cy="85" r="3.5" fill="#6bbef9"/><text x="310" y="88" fill="#6bbef9" font-size="8">VCC</text>
+            <circle cx="300" cy="105" r="3.5" fill="#97e9ff"/><text x="310" y="108" fill="#97e9ff" font-size="8">SIG</text>
+            <circle cx="300" cy="125" r="3.5" fill="#8c8c8c"/><text x="310" y="128" fill="#adb5bd" font-size="8">GND</text>
+
+            <rect x="300" y="145" width="130" height="85" rx="6" fill="#2c2e33" stroke="#8c8c8c" stroke-width="1.5"/>
+            <circle cx="380" cy="187" r="18" fill="#18191b" stroke="#97e9ff"/>
+            <text x="380" y="191" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">POT 2</text>
+            <circle cx="300" cy="170" r="3.5" fill="#6bbef9"/><text x="310" y="173" fill="#6bbef9" font-size="8">VCC</text>
+            <circle cx="300" cy="190" r="3.5" fill="#97e9ff"/><text x="310" y="193" fill="#97e9ff" font-size="8">SIG</text>
+            <circle cx="300" cy="210" r="3.5" fill="#8c8c8c"/><text x="310" y="213" fill="#adb5bd" font-size="8">GND</text>
+          </svg>
+        `;
+      }
+    }
+
+    function actualizarDesdeSlider(val) {
+      const valorADC = parseInt(val);
+      const porcentaje = Math.round((valorADC / 4095) * 100);
+      const voltaje = (valorADC * (3.3 / 4095.0)).toFixed(2);
+
+      document.getElementById('lblSliderVal').innerText = `Valor ADC: ${valorADC} (${porcentaje}%)`;
+      document.getElementById('simBadgeVoltaje').innerText = `Voltaje: ${voltaje} V`;
+      document.getElementById('simBadgeADC').innerText = `analogRead() = ${valorADC}`;
+      
+      if (currentPart === 'A') {
+        document.getElementById('simTextoSerial').innerText = `Valor ADC: ${valorADC} | Voltaje: ${voltaje} V`;
+      } else {
+        const v2Sim = (3.3 - parseFloat(voltaje)).toFixed(2);
+        const adc2Sim = 4095 - valorADC;
+        document.getElementById('simTextoSerial').innerText = `POT 1 [32]: ${valorADC} (${voltaje}V)  |  POT 2 [33]: ${adc2Sim} (${v2Sim}V)`;
+      }
+    }
+
+    function simularVoltaje(val) {
+      document.getElementById('sliderPot').value = val;
+      actualizarDesdeSlider(val);
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeBlock').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Código copiado al portapapeles con éxito');
+      });
+    }
+
+    render();
+    actualizarDesdeSlider(2048);
+  </script>
+</body>
+</html>

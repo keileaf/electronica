@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP & Arduino Boards Hub | Hardware & Peripheral Guide</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      /* Paleta estricta: Blanco, Grises, Azul y Cyan suave — versión atenuada */
+      --c-dark-gray: #7a7f87;
+      --c-mid-gray: #9aa0a8;
+      --c-blue-accent: #5aa9e6;
+      --c-blue-soft: #8ec8f2;
+      --c-cyan-light: #9fdfef;
+      --c-white: #f2f3f5;
+
+      --bg-main: #17181b;
+      --bg-sidebar: #17181b;
+      --bg-card: #1c1e22;
+      --bg-card-inner: #1c1e22;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-main);
+      color: #e4e6e9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      min-height: 100vh;
+      letter-spacing: 0.1px;
+    }
+    h1, h2, h3, h4, h5, h6 { letter-spacing: 0.1px; }
+    main { max-width: 1180px; }
+    .sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+    @media (min-width: 992px) {
+      .sidebar {
+        min-height: 100vh;
+        position: sticky;
+        top: 0;
+      }
+    }
+    .board-nav-btn {
+      text-align: left;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      color: var(--c-mid-gray);
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 2px solid transparent;
+      width: 100%;
+    }
+    .board-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--c-white);
+    }
+    .board-nav-btn.active,
+    .board-nav-btn.active-teal,
+    .board-nav-btn.active-emerald,
+    .board-nav-btn.active-purple,
+    .board-nav-btn.active-amber {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--c-white);
+      border-left: 2px solid var(--c-blue-accent);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .interactive-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      transition: border-color 0.15s ease;
+      cursor: pointer;
+    }
+    .interactive-card:hover {
+      border-color: var(--border-light);
+      background: var(--bg-card);
+    }
+    .badge-board {
+      background-color: transparent;
+      color: var(--c-mid-gray);
+      border: none;
+      padding-left: 0;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .pin-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    .nav-pills .nav-link {
+      color: var(--c-mid-gray);
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-right: 14px;
+      margin-bottom: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      background-color: transparent;
+    }
+    .nav-pills .nav-link:hover {
+      color: var(--c-white);
+      border-bottom-color: var(--border-light);
+    }
+    .nav-pills .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      font-weight: 600;
+      border-bottom-color: var(--c-cyan-light);
+    }
+
+    /* Clasificación de pines — texto con color, sin caja */
+    .pin-adc, .pin-gpio, .pin-comm, .pin-pwr, .pin-gnd, .pin-warn, .pin-c6, .pin-cam {
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      font-weight: 600;
+    }
+    .pin-adc { color: var(--c-blue-soft); }
+    .pin-gpio { color: var(--c-white); }
+    .pin-comm { color: var(--c-blue-accent); }
+    .pin-pwr { color: var(--c-dark-gray); }
+    .pin-gnd { color: #b6bcc4; }
+    .pin-warn { color: var(--c-cyan-light); }
+    .pin-c6 { color: var(--c-cyan-light); }
+    .pin-cam { color: var(--c-mid-gray); }
+
+    .quick-card {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+    .hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      box-shadow: none !important;
+    }
+    .svg-container {
+      max-width: 100%;
+      height: auto;
+    }
+    .text-cyan { color: var(--c-cyan-light) !important; }
+    .text-blue-light { color: var(--c-blue-soft) !important; }
+    .text-mid-gray { color: #a7acb4 !important; }
+
+    /* Estilos del catálogo de actividades 1 a 30 */
+    .activity-card-link {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 14px;
+      color: #e4e6e9;
+      text-decoration: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.15s ease;
+    }
+    .activity-card-link:hover {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: var(--border-light);
+      color: var(--c-white);
+    }
+    .activity-card-link.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      border-style: dashed;
+    }
+    .nav-tabs .nav-link {
+      color: var(--c-mid-gray);
+      border: 1px solid transparent;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      border-color: transparent transparent var(--c-cyan-light) transparent;
+      font-weight: 600;
+    }
+
+    .card, .interactive-card, .quick-card, .hero-card { box-shadow: none !important; }
+    .row.g-2 { --bs-gutter-x: 0.75rem; --bs-gutter-y: 0.75rem; }
+    header.py-2 { padding-top: 0.5rem !important; padding-bottom: 1.25rem !important; margin-bottom: 1.75rem !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- ================= SIDEBAR / NAVBAR ================= -->
+      <nav class="col-lg-2 d-block sidebar py-3 px-3">
+        <div class="d-flex align-items-center mb-3 px-1" style="cursor: pointer;" onclick="switchBoard('home')">
+          <i class="bi bi-motherboard text-white fs-3 me-2"></i>
+          <span class="fs-5 fw-bold text-white">Boards Hub</span>
+        </div>
+
+        <!-- Botón Actividades con Modal Selector General -->
+        <button class="btn btn-outline-light text-cyan border-secondary fw-bold w-100 mb-3 py-2" data-bs-toggle="modal" data-bs-target="#modalSelectorPlataformas">
+          <i class="bi bi-journal-code me-1"></i> Actividades
+        </button>
+
+        <small class="text-uppercase text-mid-gray fw-bold px-1 mb-2 d-block" style="font-size: 0.72rem; letter-spacing: 1px;">
+          Navegación de Placas
+        </small>
+
+        <div class="nav flex-column mb-3">
+          <!-- Inicio -->
+          <button class="board-nav-btn active d-flex align-items-center" id="btn-home" onclick="switchBoard('home')">
+            <i class="bi bi-house-door-fill fs-4 me-3 text-cyan"></i>
+            <div>
+              <div class="text-white">Inicio &amp; Conceptos</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">¿Qué es un MCU e IoT?</small>
+            </div>
+          </button>
+
+          <!-- Arduino UNO R3 -->
+          <button class="board-nav-btn d-flex align-items-center" id="btn-uno" onclick="switchBoard('uno')">
+            <i class="bi bi-cpu-fill fs-4 me-3 text-white"></i>
+            <div>
+              <div class="text-white">Arduino UNO R3</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">ATmega328P / 5V Nativo</small>
+            </div>
+          </button>
+
+          <!-- Arduino MEGA 2560 R3 -->
+          <button class="board-nav-btn d-flex align-items-center" id="btn-mega" onclick="switchBoard('mega')">
+            <i class="bi bi-grid-3x3-gap-fill fs-4 me-3 text-cyan"></i>
+            <div>
+              <div class="text-white">Arduino MEGA 2560</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">54 GPIO / 16 ADC / 4 UART</small>
+            </div>
+          </button>
+
+          <!-- ESP32 Breakout Shield -->
+          <button class="board-nav-btn d-flex align-items-center" id="btn-shield" onclick="switchBoard('shield')">
+            <i class="bi bi-motherboard-fill fs-4 me-3 text-white"></i>
+            <div>
+              <div class="text-white">ESP32 + Shield (30P)</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">HW-394 / CH9102X Base GVS</small>
+            </div>
+          </button>
+
+          <!-- Freenove ESP32-S3 WROOM -->
+          <button class="board-nav-btn d-flex align-items-center" id="btn-s3" onclick="switchBoard('s3')">
+            <i class="bi bi-camera-fill fs-4 me-3 text-cyan"></i>
+            <div>
+              <div class="text-white">Freenove ESP32-S3</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">IA Vector / CAM / WS2812</small>
+            </div>
+          </button>
+
+          <!-- ESP32-P4-M3-DEV -->
+          <button class="board-nav-btn d-flex align-items-center" id="btn-p4" onclick="switchBoard('p4')">
+            <i class="bi bi-cpu fs-4 me-3 text-white"></i>
+            <div>
+              <div class="text-white">ESP32-P4-M3-DEV</div>
+              <small class="text-mid-gray" style="font-size: 0.75rem;">Dual RISC-V + C6 SDIO</small>
+            </div>
+          </button>
+        </div>
+
+        <div class="p-3 rounded bg-card border border-secondary d-none d-lg-block">
+          <div class="small fw-semibold text-cyan mb-1"><i class="bi bi-info-circle me-1"></i> Explorador Activo</div>
+          <p class="small text-mid-gray mb-0">Selecciona cualquier tarjeta para consultar diagramas interactivos, voltajes lógicos, buses I2C/SPI y síntesis de periféricos.</p>
+        </div>
+      </nav>
+
+      <!-- ================= CONTENIDO PRINCIPAL ================= -->
+      <main class="col-lg-10 px-3 px-md-4 py-3">
+
+        <!-- ================= VISTA 0: INICIO ================= -->
+        <div id="view-home">
+          <div class="hero-card p-4 p-md-5 mb-4 shadow-sm">
+            <div class="row align-items-center">
+              <div class="col-lg-8">
+                <span class="badge badge-board px-3 py-1 mb-2 text-uppercase fw-semibold">Fundamentos de Hardware Embebido &amp; IoT</span>
+                <h1 class="display-6 fw-bold text-white mb-3">Guía Comparativa de Microcontroladores</h1>
+                <p class="lead text-mid-gray fs-6 mb-4">
+                  Un microcontrolador integra procesador, memorias y periféricos de entrada/salida en un único circuito integrado[cite: 2]. Selecciona la plataforma ideal según la escala de tu proyecto: desde la robustez de <strong>Arduino (5V)</strong>[cite: 2] hasta la potencia para IA, visión y comunicación inalámbrica de las familias <strong>ESP32 (3.3V)</strong>[cite: 2].
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-light fw-bold px-3 py-2" onclick="switchBoard('uno')">
+                    <i class="bi bi-cpu-fill me-1"></i> Arduino UNO[cite: 2]
+                  </button>
+                  <button class="btn btn-outline-light fw-bold px-3 py-2" onclick="switchBoard('mega')">
+                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Arduino MEGA[cite: 2]
+                  </button>
+                  <button class="btn btn-light fw-bold px-3 py-2 text-dark" onclick="switchBoard('shield')">
+                    <i class="bi bi-motherboard me-1"></i> ESP32 Shield[cite: 2]
+                  </button>
+                  <button class="btn btn-outline-light fw-bold px-3 py-2" onclick="switchBoard('s3')">
+                    <i class="bi bi-camera-fill me-1"></i> ESP32-S3 WROOM[cite: 2]
+                  </button>
+                  <button class="btn btn-outline-light fw-bold px-3 py-2" onclick="switchBoard('p4')">
+                    <i class="bi bi-cpu me-1"></i> ESP32-P4 RISC-V[cite: 2]
+                  </button>
+                </div>
+              </div>
+              <div class="col-lg-4 text-center d-none d-lg-block">
+                <i class="bi bi-cpu-fill text-white" style="font-size: 7rem; opacity: 0.25;"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pilares IoT / Embebidos -->
+          <h4 class="h5 text-white mb-3"><i class="bi bi-stars text-cyan me-2"></i>Conceptos Esenciales de Laboratorio</h4>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 bg-card border border-secondary rounded-3 h-100">
+                <i class="bi bi-lightning-charge fs-3 text-cyan mb-2 d-block"></i>
+                <h6 class="text-white">Voltajes Lógicos: 5V vs 3.3V</h6>
+                <p class="small text-mid-gray mb-0">
+                  Arduino UNO y MEGA operan a <strong>5V nativo</strong>[cite: 2]. Las tarjetas ESP32, S3 y P4 funcionan a <strong>3.3V</strong>; aplicar 5V a sus GPIOs causa daños irreversibles[cite: 2].
+                </p>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 bg-card border border-secondary rounded-3 h-100">
+                <i class="bi bi-wifi fs-3 text-white mb-2 d-block"></i>
+                <h6 class="text-white">Conectividad &amp; IoT</h6>
+                <p class="small text-mid-gray mb-0">
+                  El ESP32 estándar y el ESP32-S3 integran radio <strong>Wi-Fi y Bluetooth 5 / BLE</strong> nativa en chip con aceleración para MQTT y HTTPS TLS[cite: 2].
+                </p>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 bg-card border border-secondary rounded-3 h-100">
+                <i class="bi bi-cpu fs-3 text-cyan mb-2 d-block"></i>
+                <h6 class="text-white">Aceleración para IA / Visión</h6>
+                <p class="small text-mid-gray mb-0">
+                  El <strong>ESP32-S3</strong> incluye extensiones vectoriales para procesamiento digital de señales (DSP) y redes neuronales, además de interfaz para cámara[cite: 2].
+                </p>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+              <div class="p-3 bg-card border border-secondary rounded-3 h-100">
+                <i class="bi bi-diagram-3 fs-3 text-white mb-2 d-block"></i>
+                <h6 class="text-white">Buses I2C, SPI y PWM</h6>
+                <p class="small text-mid-gray mb-0">
+                  Todas las tarjetas cuentan con PWM para velocidad de motores (L293D), servomotores y bus I2C para comunicar sensores como el <strong>MPU6050</strong>[cite: 2].
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector de Placas (5 Tarjetas) -->
+          <div class="card bg-card border-secondary p-4">
+            <h5 class="text-white mb-3"><i class="bi bi-grid-fill me-2 text-cyan"></i>Tarjetas de Desarrollo Disponibles</h5>
+            <div class="row g-3">
+              <div class="col-md-6 col-xl-4">
+                <div class="p-3 rounded border border-secondary h-100 bg-main" style="cursor: pointer;" onclick="switchBoard('uno')">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 text-white"><i class="bi bi-cpu-fill me-1 text-cyan"></i> Arduino UNO</h6>
+                    <span class="badge badge-board">8-bit / 5V[cite: 2]</span>
+                  </div>
+                  <p class="small text-mid-gray mb-2">
+                    ATmega328P a 16 MHz[cite: 2]. 14 pines digitales, 6 ADC, lógica 5V nativa[cite: 2]. El estándar clásico de iniciación[cite: 2].
+                  </p>
+                  <span class="small text-cyan fw-semibold">Ver ficha y pinout &rarr;[cite: 2]</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-3 rounded border border-secondary h-100 bg-main" style="cursor: pointer;" onclick="switchBoard('mega')">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 text-white"><i class="bi bi-grid-3x3-gap-fill me-1 text-cyan"></i> Arduino MEGA</h6>
+                    <span class="badge badge-board">54 GPIO / 4 UART[cite: 2]</span>
+                  </div>
+                  <p class="small text-mid-gray mb-2">
+                    ATmega2560 con 256 KB Flash, 54 pines digitales (15 PWM), 16 canales ADC y 4 puertos UART hardware[cite: 2].
+                  </p>
+                  <span class="small text-cyan fw-semibold">Ver mapa y conexiones &rarr;[cite: 2]</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-3 rounded border border-secondary h-100 bg-main" style="cursor: pointer;" onclick="switchBoard('shield')">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 text-white"><i class="bi bi-plug me-1 text-cyan"></i> ESP32 + Shield</h6>
+                    <span class="badge badge-board">32-bit / Dual Core[cite: 2]</span>
+                  </div>
+                  <p class="small text-mid-gray mb-2">
+                    Xtensa LX6 a 240 MHz con Wi-Fi/BLE, chip USB CH9102X y placa base con terminales GVS de 3 pines[cite: 2].
+                  </p>
+                  <span class="small text-cyan fw-semibold">Ver diagrama GVS &rarr;[cite: 2]</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-6">
+                <div class="p-3 rounded border border-secondary h-100 bg-main" style="cursor: pointer;" onclick="switchBoard('s3')">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 text-white"><i class="bi bi-camera-fill me-1 text-cyan"></i> Freenove ESP32-S3 WROOM</h6>
+                    <span class="badge badge-board">IA Vector / CAM / BLE 5[cite: 2]</span>
+                  </div>
+                  <p class="small text-mid-gray mb-2">
+                    Dual Xtensa LX7 a 240 MHz con instrucciones vectoriales, interfaz de cámara, LED RGB WS2812 en GPIO48, USB OTG y ranura MicroSD[cite: 2].
+                  </p>
+                  <span class="small text-cyan fw-semibold">Ver pinout Freenove y funciones &rarr;[cite: 2]</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-6">
+                <div class="p-3 rounded border border-secondary h-100 bg-main" style="cursor: pointer;" onclick="switchBoard('p4')">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-white mb-0"><i class="bi bi-cpu me-1 text-cyan"></i> ESP32-P4-M3</h6>
+                    <span class="badge badge-board">Dual RISC-V + C6[cite: 2]</span>
+                  </div>
+                  <p class="small text-mid-gray mb-2">
+                    SoC RISC-V a 360 MHz con 32MB PSRAM, cámara MIPI CSI, pantalla DSI, Ethernet 100M y Wi-Fi 6 por SDIO[cite: 2].
+                  </p>
+                  <span class="small text-cyan fw-semibold">Ver arquitectura P4 &rarr;[cite: 2]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VISTA 1: ARDUINO UNO R3 ================= -->
+        <div id="view-uno" style="display: none;">
+          <header class="py-2 mb-3 border-bottom border-secondary">
+            <span class="badge badge-board mb-2 px-3 py-1 text-uppercase fw-semibold">Microcontrolador Clásico de 8 Bits | Lógica 5V Nativa[cite: 2]</span>
+            <h1 class="h2 fw-bold text-white">Arduino UNO R3 (ATmega328P)[cite: 2]</h1>
+            <p class="text-mid-gray mb-2 small">
+              Placa de desarrollo de referencia en educación basada en el microcontrolador <strong>Microchip ATmega328P</strong> a 16 MHz[cite: 2]. Alimentación por USB-B o Jack DC (7-12V) con 14 pines digitales, 6 entradas analógicas y soporte directo para señales de 5V[cite: 2].
+            </p>
+          </header>
+
+          <!-- 8 Tarjetas Interactivas con Modal (Arduino UNO) -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-white mb-0"><i class="bi bi-grid-fill me-2 text-cyan"></i>Módulos de Hardware (Clic en cada cuadro para ver detalles)[cite: 2]</h6>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_mcu')">
+                <i class="bi bi-cpu-fill fs-4 mb-1 d-block text-cyan"></i>
+                <h6 class="text-white mb-1 small fw-bold">ATmega328P MCU[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">AVR RISC de 8 bits a 16 MHz con ejecución monociclo[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_mem')">
+                <i class="bi bi-memory fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Memoria Interna[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">32 KB Flash, 2 KB SRAM y 1 KB EEPROM[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_pwr')">
+                <i class="bi bi-lightning-charge-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Jack DC (7V - 12V)[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Regulador lineal NCP1117 para alimentar con baterías o eliminador[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_usb')">
+                <i class="bi bi-usb-symbol fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">USB Tipo B / 16U2[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Interfaz USB programable ATmega16U2 para comunicación serie[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_gpio')">
+                <i class="bi bi-toggles fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">14 Pines Digitales[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">6 canales PWM (D3, D5, D6, D9, D10, D11) y hasta 20mA por pin[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_adc')">
+                <i class="bi bi-sliders fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">6 Entradas ADC (10-bit)[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Pines A0 a A5 con resolución de 0 a 1023 (0V a 5V)[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_comm')">
+                <i class="bi bi-diagram-3-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Buses I2C / SPI / UART[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">I2C en A4/A5, SPI en D10-D13 y UART hardware en D0/D1[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('uno_icsp')">
+                <i class="bi bi-cpu fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Cabecera ICSP (SPI)[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Conector 2x3 para programación directa por programador AVR[cite: 2].</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Síntesis Rápida de Periféricos Arduino UNO -->
+          <div class="card bg-card border-secondary p-3 mb-4">
+            <h5 class="mb-2 text-cyan"><i class="bi bi-lightning-charge-fill me-2"></i>Síntesis de Periféricos &amp; Conexiones (Arduino UNO R3)[cite: 2]</h5>
+            <div class="row g-2">
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-gpio mb-1">GPIO Digital &amp; PWM (5V)[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>D2 a D13 | PWM en D3, D5, D6, D9, D10, D11[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Encender LEDs / Relés:</strong> D2 a D13 (LED integrado en <strong>D13</strong>)[cite: 2].<br>
+                    • <strong>Motores / Puente H (L293D / Servos):</strong> Pines marcados con <code>~</code> para <code>analogWrite()</code> de 0 a 255[cite: 2].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-adc mb-1">ADC (Entradas Analógicas 10 bits)[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>A0, A1, A2, A3, A4, A5[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Lectura de Potenciómetros, LDR, LM35:</strong> <code>analogRead()</code> entrega valores de 0 a 1023[cite: 2].<br>
+                    • Los pines A0-A5 también funcionan como entradas/salidas digitales (D14-D19)[cite: 2].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-comm mb-1">Buses de Comunicación[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>I2C: SDA (A4) / SCL (A5) | SPI: D10-D13[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Sensores I2C (MPU6050, LCD I2C):</strong> Conéctalos a A4 (SDA) y A5 (SCL)[cite: 2].<br>
+                    • <strong>Bus SPI:</strong> SS (D10), MOSI (D11), MISO (D12), SCK (D13)[cite: 2].<br>
+                    • <strong>UART Serial:</strong> TX (D1) y RX (D0) compartidos con el chip USB[cite: 2].
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout Doble: Diagrama SVG y Tabla Didáctica -->
+          <div class="row g-3 mb-4">
+            <div class="col-xl-5">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0 text-cyan"><i class="bi bi-image me-1"></i> Diagrama Físico Arduino UNO R3[cite: 2]</h6>
+                  <span class="badge badge-board">68.6 x 53.4 mm[cite: 2]</span>
+                </div>
+                <div class="text-center py-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" class="svg-container" style="background:#0a131a; border-radius:10px; border: 1px solid #1e3a47;">
+                    <rect x="25" y="20" width="470" height="380" rx="14" fill="#005c69" stroke="#008796" stroke-width="2"/>
+                    <rect x="15" y="45" width="85" height="70" rx="4" fill="#64748b" stroke="#cbd5e1" stroke-width="1.5"/>
+                    <rect x="25" y="55" width="65" height="50" rx="2" fill="#334155"/>
+                    <text x="57" y="85" fill="#f8fafc" font-size="10" font-weight="bold" text-anchor="middle">USB-B</text>
+                    <rect x="15" y="270" width="105" height="90" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                    <circle cx="67" cy="315" r="14" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    <circle cx="67" cy="315" r="5" fill="#cbd5e1"/>
+                    <text x="67" y="348" fill="#94a3b8" font-size="8" font-weight="bold" text-anchor="middle">7-12V DC</text>
+                    <rect x="210" y="225" width="170" height="60" rx="4" fill="#111827" stroke="#334155" stroke-width="1.5"/>
+                    <circle cx="218" cy="255" r="4" fill="#334155"/>
+                    <text x="295" y="253" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">ATMEGA328P-PU</text>
+                    <text x="295" y="268" fill="#2dd4bf" font-size="8" text-anchor="middle">16.000 MHz Crystal</text>
+                    <rect x="135" y="80" width="45" height="45" rx="3" fill="#111827" stroke="#475569"/>
+                    <text x="157" y="106" fill="#94a3b8" font-size="7" font-weight="bold" text-anchor="middle">16U2</text>
+                    <rect x="105" y="30" width="22" height="22" rx="3" fill="#dc2626" stroke="#f87171"/>
+                    <text x="116" y="44" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">RST</text>
+                    <rect x="180" y="25" width="300" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="465" cy="38" r="3" fill="#60a5fa"/><text x="465" y="60" fill="#60a5fa" font-size="7" text-anchor="middle">SCL</text>
+                    <circle cx="445" cy="38" r="3" fill="#60a5fa"/><text x="445" y="60" fill="#60a5fa" font-size="7" text-anchor="middle">SDA</text>
+                    <circle cx="425" cy="38" r="3" fill="#cbd5e1"/><text x="425" y="60" fill="#cbd5e1" font-size="7" text-anchor="middle">AREF</text>
+                    <circle cx="405" cy="38" r="3" fill="#94a3b8"/><text x="405" y="60" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="385" cy="38" r="3" fill="#34d399"/><text x="385" y="60" fill="#34d399" font-size="7" text-anchor="middle">13</text>
+                    <circle cx="365" cy="38" r="3" fill="#34d399"/><text x="365" y="60" fill="#34d399" font-size="7" text-anchor="middle">12</text>
+                    <circle cx="345" cy="38" r="3" fill="#fbbf24"/><text x="345" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~11</text>
+                    <circle cx="325" cy="38" r="3" fill="#fbbf24"/><text x="325" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~10</text>
+                    <circle cx="305" cy="38" r="3" fill="#fbbf24"/><text x="305" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~9</text>
+                    <circle cx="285" cy="38" r="3" fill="#34d399"/><text x="285" y="60" fill="#34d399" font-size="7" text-anchor="middle">8</text>
+                    <circle cx="260" cy="38" r="3" fill="#34d399"/><text x="260" y="60" fill="#34d399" font-size="7" text-anchor="middle">7</text>
+                    <circle cx="240" cy="38" r="3" fill="#fbbf24"/><text x="240" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~6</text>
+                    <circle cx="220" cy="38" r="3" fill="#fbbf24"/><text x="220" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~5</text>
+                    <circle cx="200" cy="38" r="3" fill="#34d399"/><text x="200" y="60" fill="#34d399" font-size="7" text-anchor="middle">4</text>
+                    <rect x="345" y="370" width="135" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="360" cy="383" r="3" fill="#fbbf24"/><text x="360" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A0</text>
+                    <circle cx="380" cy="383" r="3" fill="#fbbf24"/><text x="380" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A1</text>
+                    <circle cx="400" cy="383" r="3" fill="#fbbf24"/><text x="400" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A2</text>
+                    <circle cx="420" cy="383" r="3" fill="#fbbf24"/><text x="420" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A3</text>
+                    <circle cx="440" cy="383" r="3" fill="#60a5fa"/><text x="440" y="362" fill="#60a5fa" font-size="7" text-anchor="middle">A4</text>
+                    <circle cx="460" cy="383" r="3" fill="#60a5fa"/><text x="460" y="362" fill="#60a5fa" font-size="7" text-anchor="middle">A5</text>
+                    <rect x="180" y="370" width="155" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="195" cy="383" r="3" fill="#cbd5e1"/><text x="195" y="362" fill="#cbd5e1" font-size="7" text-anchor="middle">IOREF</text>
+                    <circle cx="215" cy="383" r="3" fill="#cbd5e1"/><text x="215" y="362" fill="#cbd5e1" font-size="7" text-anchor="middle">RESET</text>
+                    <circle cx="235" cy="383" r="3" fill="#f87171"/><text x="235" y="362" fill="#f87171" font-size="7" text-anchor="middle">3.3V</text>
+                    <circle cx="255" cy="383" r="3" fill="#f87171"/><text x="255" y="362" fill="#f87171" font-size="7" text-anchor="middle">5V</text>
+                    <circle cx="275" cy="383" r="3" fill="#94a3b8"/><text x="275" y="362" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="295" cy="383" r="3" fill="#94a3b8"/><text x="295" y="362" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="315" cy="383" r="3" fill="#f87171"/><text x="315" y="362" fill="#f87171" font-size="7" text-anchor="middle">VIN</text>
+                    <text x="290" y="155" fill="#f8fafc" font-size="16" font-weight="bold" text-anchor="middle">ARDUINO</text>
+                    <text x="290" y="175" fill="#2dd4bf" font-size="12" font-weight="bold" text-anchor="middle">UNO R3</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-7">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0 text-cyan"><i class="bi bi-table me-1"></i> Pinout y Funciones Especiales[cite: 2]</h6>
+                  <span class="badge badge-board">5V TTL[cite: 2]</span>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 470px; overflow-y: auto;">
+                  <table class="table table-dark table-hover table-bordered pin-table align-middle small mb-0">
+                    <thead class="table-secondary text-dark sticky-top">
+                      <tr>
+                        <th>Pin Físico[cite: 2]</th>
+                        <th>Función Técnica[cite: 2]</th>
+                        <th>Capacidades Especiales[cite: 2]</th>
+                        <th>Uso Práctico Recomendado[cite: 2]</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>D0 (RX)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">UART RX</span>[cite: 2]</td>
+                        <td>Recepción serial USB[cite: 2]</td>
+                        <td>Conexión con PC. <em>Evitar en proyectos para no bloquear la subida de código.</em>[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D1 (TX)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">UART TX</span>[cite: 2]</td>
+                        <td>Transmisión serial USB[cite: 2]</td>
+                        <td>Envío de mensajes a <code>Serial.print()</code>.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D2</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO / INT0</span>[cite: 2]</td>
+                        <td>Interrupción externa 0[cite: 2]</td>
+                        <td>Lectura de encoders de motor, sensores de pulso o botones críticos.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D3 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO / PWM / INT1</span>[cite: 2]</td>
+                        <td>PWM 490 Hz / Interrupción 1[cite: 2]</td>
+                        <td>Control de velocidad de motores con <strong>L293D</strong> o servomotores.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D4</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO</span>[cite: 2]</td>
+                        <td>Entrada / Salida digital[cite: 2]</td>
+                        <td>Encendido de relevadores, LEDs, zumbadores o pulsadores.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D5 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 2]</td>
+                        <td>PWM 980 Hz[cite: 2]</td>
+                        <td>Modulación de potencia para LEDs o motores DC.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D6 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 2]</td>
+                        <td>PWM 980 Hz[cite: 2]</td>
+                        <td>Control de velocidad y atenuación de luz.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D7</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO</span>[cite: 2]</td>
+                        <td>Entrada / Salida digital[cite: 2]</td>
+                        <td>Sensor ultrasónico HC-SR04 (Trigger/Echo).[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D8</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO</span>[cite: 2]</td>
+                        <td>Entrada / Salida digital[cite: 2]</td>
+                        <td>Control digital general.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D9 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 2]</td>
+                        <td>PWM 490 Hz[cite: 2]</td>
+                        <td>Control de servomotores con la librería <code>Servo.h</code>.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D10 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">PWM / SPI SS</span>[cite: 2]</td>
+                        <td>PWM / Chip Select SPI[cite: 2]</td>
+                        <td>Selector esclavo para lectores RFID RC522 o tarjetas SD.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D11 (~)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">PWM / SPI MOSI</span>[cite: 2]</td>
+                        <td>PWM / Master Out Slave In[cite: 2]</td>
+                        <td>Envío de datos por bus SPI de alta velocidad.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D12</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">SPI MISO</span>[cite: 2]</td>
+                        <td>Master In Slave Out[cite: 2]</td>
+                        <td>Recepción de datos desde periféricos SPI.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D13</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">SPI SCK / LED</span>[cite: 2]</td>
+                        <td>Reloj SPI / LED integrado[cite: 2]</td>
+                        <td>Prácticas de prueba (parpadeo sin componentes externos).[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A0 - A3</strong>[cite: 2]</td>
+                        <td><span class="badge pin-adc">ADC 10-bit</span>[cite: 2]</td>
+                        <td>0 a 1023 (0 a 5V)[cite: 2]</td>
+                        <td>Lectura de potenciómetros, fotorresistencias (LDR) y sensores analógicos.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A4 (SDA)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">ADC / I2C SDA</span>[cite: 2]</td>
+                        <td>Datos I2C[cite: 2]</td>
+                        <td>Conexión del acelerómetro <strong>MPU6050</strong>, pantallas OLED y displays LCD 16x2.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A5 (SCL)</strong>[cite: 2]</td>
+                        <td><span class="badge pin-comm">ADC / I2C SCL</span>[cite: 2]</td>
+                        <td>Reloj I2C[cite: 2]</td>
+                        <td>Línea de sincronización para módulos I2C.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>5V</strong>[cite: 2]</td>
+                        <td><span class="badge pin-pwr">Salida 5V</span>[cite: 2]</td>
+                        <td>Hasta 500mA por USB[cite: 2]</td>
+                        <td>Alimentación principal de circuitos y sensores.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>3.3V</strong>[cite: 2]</td>
+                        <td><span class="badge pin-pwr">Salida 3.3V</span>[cite: 2]</td>
+                        <td>Hasta 150mA[cite: 2]</td>
+                        <td>Alimentación de módulos delicados de bajo voltaje.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>VIN</strong>[cite: 2]</td>
+                        <td><span class="badge pin-pwr">Entrada 7-12V</span>[cite: 2]</td>
+                        <td>Entrada no regulada[cite: 2]</td>
+                        <td>Conexión directa desde portapilas o baterías externas.[cite: 2]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GND</strong>[cite: 2]</td>
+                        <td><span class="badge pin-gnd">Tierra</span>[cite: 2]</td>
+                        <td>0V de referencia[cite: 2]</td>
+                        <td>Tierra común de todo el circuito.[cite: 2]</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VISTA 2: ARDUINO MEGA 2560 R3 ================= -->
+        <div id="view-mega" style="display: none;">
+          <header class="py-2 mb-3 border-bottom border-secondary">
+            <span class="badge badge-board mb-2 px-3 py-1 text-uppercase fw-semibold">Microcontrolador de Alta Capacidad | 54 GPIO &amp; 4 Puertos UART[cite: 2]</span>
+            <h1 class="h2 fw-bold text-white">Arduino MEGA 2560 R3 (ATmega2560)[cite: 2]</h1>
+            <p class="text-mid-gray mb-2 small">
+              Tarjeta diseñada para proyectos complejos de robótica, impresoras 3D y sistemas multi-sensor basada en el chip <strong>ATmega2560</strong> a 16 MHz[cite: 2]. Dispone de 54 pines digitales (15 con soporte PWM), 16 canales ADC, 4 puertos seriales por hardware y 256 KB de memoria Flash[cite: 2].
+            </p>
+          </header>
+
+          <!-- 8 Tarjetas Interactivas con Modal (Arduino MEGA 2560) -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-white mb-0"><i class="bi bi-grid-fill me-2 text-cyan"></i>Módulos de Hardware (Clic en cada cuadro para ver detalles)[cite: 2]</h6>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_mcu')">
+                <i class="bi bi-cpu-fill fs-4 mb-1 d-block text-cyan"></i>
+                <h6 class="text-white mb-1 small fw-bold">ATmega2560 MCU[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Microcontrolador AVR de 8 bits a 16 MHz y 100 pines TQFP[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_mem')">
+                <i class="bi bi-memory fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Memoria Masiva[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">256 KB Flash (8KB bootloader), 8 KB SRAM y 4 KB EEPROM[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_gpio')">
+                <i class="bi bi-grid-3x3-gap-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">54 Pines Digitales[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">15 canales PWM (D2 a D13 y D44 a D46) a 5V nativo[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_adc')">
+                <i class="bi bi-sliders fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">16 Entradas ADC[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Pines A0 a A15 de 10 bits (0-1023) para múltiples sensores[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_uart')">
+                <i class="bi bi-chat-left-dots-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">4 Puertos UART[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Serial0 (USB), Serial1 (18/19), Serial2 (16/17) y Serial3 (14/15)[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_comm')">
+                <i class="bi bi-diagram-3-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">I2C y SPI Dedicados[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">I2C en D20/D21 y SPI por hardware en D50, D51, D52 y D53[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_pwr')">
+                <i class="bi bi-lightning-charge-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Jack DC (7V - 12V)[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Regulador LDO integrado con protección térmica para corriente estable[cite: 2].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mega_ext')">
+                <i class="bi bi-hdd-stack-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Conector Doble 2x18[cite: 2]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Header trasero con los pines D22 a D53 y líneas de 5V/GND[cite: 2].</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Síntesis Rápida de Periféricos Arduino MEGA -->
+          <div class="card bg-card border-secondary p-3 mb-4">
+            <h5 class="mb-2 text-cyan"><i class="bi bi-lightning-charge-fill me-2"></i>Síntesis de Periféricos &amp; Conexiones (Arduino MEGA 2560)[cite: 2]</h5>
+            <div class="row g-2">
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-gpio mb-1">54 Pines Digitales &amp; 15 PWM (5V)[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>D0 a D53 | PWM en D2 a D13 y D44, D45, D46[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Robótica y Motores (L293D / L298N / Servos):</strong> Hasta 15 salidas PWM simultáneas sin interferir con la programación[cite: 2].<br>
+                    • <strong>Interrupciones externas (6 pines):</strong> Pines 2, 3, 18, 19, 20 y 21 para lectura de múltiples encoders[cite: 2].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-adc mb-1">16 Entradas Analógicas (10 bits)[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>A0 hasta A15 (16 canales)[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Batería de sensores:</strong> Permite leer simultáneamente potenciómetros, fotorresistencias, sensores de línea, temperatura (LM35) y gas (MQ)[cite: 2].<br>
+                    • Rango de 0 a 5V con <code>analogRead()</code> (0 a 1023)[cite: 2].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-comm mb-1">4 Puertos Seriales, I2C y SPI[cite: 2]</span>
+                  <p class="small text-white mb-1"><strong>4x UART | I2C (20/21) | SPI (50-53)[cite: 2]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Multi-Comunicación:</strong> Conecta GPS en <code>Serial1</code>, Bluetooth HC-05 en <code>Serial2</code> y Nextion en <code>Serial3</code> sin usar SoftwareSerial[cite: 2].<br>
+                    • <strong>I2C (MPU6050, OLED):</strong> SDA (Pin 20) y SCL (Pin 21)[cite: 2].<br>
+                    • <strong>SPI:</strong> MISO (50), MOSI (51), SCK (52), SS (53)[cite: 2].
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout Doble: Diagrama SVG y Tabla Didáctica MEGA 2560 -->
+          <div class="row g-3 mb-4">
+            <div class="col-xl-5">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0 text-cyan"><i class="bi bi-image me-1"></i> Diagrama Físico Arduino MEGA 2560[cite: 2]</h6>
+                  <span class="badge badge-board">101.5 x 53.3 mm[cite: 2]</span>
+                </div>
+                <div class="text-center py-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" class="svg-container" style="background:#0a131a; border-radius:10px; border: 1px solid #1e3a47;">
+                    <rect x="20" y="20" width="640" height="380" rx="14" fill="#005c69" stroke="#008796" stroke-width="2"/>
+                    <rect x="12" y="45" width="80" height="70" rx="4" fill="#64748b" stroke="#cbd5e1" stroke-width="1.5"/>
+                    <rect x="22" y="55" width="60" height="50" rx="2" fill="#334155"/>
+                    <text x="52" y="85" fill="#f8fafc" font-size="10" font-weight="bold" text-anchor="middle">USB-B</text>
+                    <rect x="12" y="270" width="100" height="90" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                    <circle cx="62" cy="315" r="14" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    <circle cx="62" cy="315" r="5" fill="#cbd5e1"/>
+                    <text x="62" y="348" fill="#94a3b8" font-size="8" font-weight="bold" text-anchor="middle">7-12V DC</text>
+                    <rect x="290" y="160" width="100" height="100" rx="4" fill="#111827" stroke="#334155" stroke-width="1.5"/>
+                    <circle cx="300" cy="170" r="3" fill="#34d399"/>
+                    <text x="340" y="205" fill="#f8fafc" font-size="11" font-weight="bold" text-anchor="middle">ATMEGA</text>
+                    <text x="340" y="222" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle">2560-16AU</text>
+                    <text x="340" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">16.000 MHz</text>
+                    <rect x="125" y="80" width="45" height="45" rx="3" fill="#111827" stroke="#475569"/>
+                    <text x="147" y="106" fill="#94a3b8" font-size="7" font-weight="bold" text-anchor="middle">16U2</text>
+                    <rect x="100" y="30" width="22" height="22" rx="3" fill="#dc2626" stroke="#f87171"/>
+                    <text x="111" y="44" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">RST</text>
+                    <rect x="175" y="25" width="285" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="445" cy="38" r="3" fill="#60a5fa"/><text x="445" y="60" fill="#60a5fa" font-size="7" text-anchor="middle">21</text>
+                    <circle cx="425" cy="38" r="3" fill="#60a5fa"/><text x="425" y="60" fill="#60a5fa" font-size="7" text-anchor="middle">20</text>
+                    <circle cx="405" cy="38" r="3" fill="#cbd5e1"/><text x="405" y="60" fill="#cbd5e1" font-size="7" text-anchor="middle">AREF</text>
+                    <circle cx="385" cy="38" r="3" fill="#94a3b8"/><text x="385" y="60" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="365" cy="38" r="3" fill="#fbbf24"/><text x="365" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~13</text>
+                    <circle cx="345" cy="38" r="3" fill="#fbbf24"/><text x="345" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~12</text>
+                    <circle cx="325" cy="38" r="3" fill="#fbbf24"/><text x="325" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~10</text>
+                    <circle cx="305" cy="38" r="3" fill="#fbbf24"/><text x="305" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~9</text>
+                    <circle cx="285" cy="38" r="3" fill="#34d399"/><text x="285" y="60" fill="#34d399" font-size="7" text-anchor="middle">8</text>
+                    <circle cx="265" cy="38" r="3" fill="#fbbf24"/><text x="265" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~7</text>
+                    <circle cx="245" cy="38" r="3" fill="#fbbf24"/><text x="245" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~6</text>
+                    <circle cx="225" cy="38" r="3" fill="#fbbf24"/><text x="225" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~5</text>
+                    <circle cx="205" cy="38" r="3" fill="#fbbf24"/><text x="205" y="60" fill="#fbbf24" font-size="7" text-anchor="middle">~4</text>
+                    <rect x="475" y="25" width="115" height="26" rx="2" fill="#0f172a" stroke="#3b82f6"/>
+                    <circle cx="490" cy="38" r="3" fill="#38bdf8"/><text x="490" y="60" fill="#38bdf8" font-size="7" text-anchor="middle">14</text>
+                    <circle cx="510" cy="38" r="3" fill="#38bdf8"/><text x="510" y="60" fill="#38bdf8" font-size="7" text-anchor="middle">15</text>
+                    <circle cx="530" cy="38" r="3" fill="#38bdf8"/><text x="530" y="60" fill="#38bdf8" font-size="7" text-anchor="middle">16</text>
+                    <circle cx="550" cy="38" r="3" fill="#38bdf8"/><text x="550" y="60" fill="#38bdf8" font-size="7" text-anchor="middle">17</text>
+                    <circle cx="570" cy="38" r="3" fill="#38bdf8"/><text x="570" y="60" fill="#38bdf8" font-size="7" text-anchor="middle">18</text>
+                    <text x="532" y="16" fill="#60a5fa" font-size="8" font-weight="bold" text-anchor="middle">SERIAL 1, 2, 3</text>
+                    <rect x="345" y="370" width="245" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="360" cy="383" r="3" fill="#fbbf24"/><text x="360" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A0</text>
+                    <circle cx="380" cy="383" r="3" fill="#fbbf24"/><text x="380" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A2</text>
+                    <circle cx="400" cy="383" r="3" fill="#fbbf24"/><text x="400" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A4</text>
+                    <circle cx="420" cy="383" r="3" fill="#fbbf24"/><text x="420" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A6</text>
+                    <circle cx="450" cy="383" r="3" fill="#fbbf24"/><text x="450" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A8</text>
+                    <circle cx="480" cy="383" r="3" fill="#fbbf24"/><text x="480" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A10</text>
+                    <circle cx="510" cy="383" r="3" fill="#fbbf24"/><text x="510" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A12</text>
+                    <circle cx="540" cy="383" r="3" fill="#fbbf24"/><text x="540" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A14</text>
+                    <circle cx="570" cy="383" r="3" fill="#fbbf24"/><text x="570" y="362" fill="#fbbf24" font-size="7" text-anchor="middle">A15</text>
+                    <text x="465" y="412" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="middle">16 CANALES ADC (A0 - A15)</text>
+                    <rect x="175" y="370" width="155" height="26" rx="2" fill="#0f172a" stroke="#334155"/>
+                    <circle cx="190" cy="383" r="3" fill="#cbd5e1"/><text x="190" y="362" fill="#cbd5e1" font-size="7" text-anchor="middle">IOREF</text>
+                    <circle cx="210" cy="383" r="3" fill="#cbd5e1"/><text x="210" y="362" fill="#cbd5e1" font-size="7" text-anchor="middle">RST</text>
+                    <circle cx="230" cy="383" r="3" fill="#f87171"/><text x="230" y="362" fill="#f87171" font-size="7" text-anchor="middle">3.3V</text>
+                    <circle cx="250" cy="383" r="3" fill="#f87171"/><text x="250" y="362" fill="#f87171" font-size="7" text-anchor="middle">5V</text>
+                    <circle cx="270" cy="383" r="3" fill="#94a3b8"/><text x="270" y="362" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="290" cy="383" r="3" fill="#94a3b8"/><text x="290" y="362" fill="#94a3b8" font-size="7" text-anchor="middle">GND</text>
+                    <circle cx="310" cy="383" r="3" fill="#f87171"/><text x="310" y="362" fill="#f87171" font-size="7" text-anchor="middle">VIN</text>
+                    <rect x="605" y="60" width="38" height="295" rx="3" fill="#0f172a" stroke="#059669" stroke-width="1.5"/>
+                    <text x="624" y="200" fill="#34d399" font-size="9" font-weight="bold" transform="rotate(90 624,200)" text-anchor="middle">DIGITAL D22 - D53 + SPI (50-53)</text>
+                    <text x="225" y="180" fill="#f8fafc" font-size="16" font-weight="bold" text-anchor="middle">ARDUINO</text>
+                    <text x="225" y="200" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">MEGA 2560 R3</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-7">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0 text-cyan"><i class="bi bi-table me-1"></i> Pinout y Mapeo de Periféricos[cite: 1]</h6>
+                  <span class="badge badge-board">5V TTL / 54 GPIO[cite: 1]</span>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 470px; overflow-y: auto;">
+                  <table class="table table-dark table-hover table-bordered pin-table align-middle small mb-0">
+                    <thead class="table-secondary text-dark sticky-top">
+                      <tr>
+                        <th>Pin Físico[cite: 1]</th>
+                        <th>Función Técnica[cite: 1]</th>
+                        <th>Capacidades Especiales[cite: 1]</th>
+                        <th>Uso Práctico Recomendado[cite: 1]</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>D0 (RX0) / D1 (TX0)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">Serial0 (USB)</span>[cite: 1]</td>
+                        <td>UART principal de depuración[cite: 1]</td>
+                        <td>Comunicación serie con la PC mediante <code>Serial.print()</code>.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D2 (~) a D13 (~)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">PWM / GPIO</span>[cite: 1]</td>
+                        <td>12 canales PWM (490Hz / 980Hz)[cite: 1]</td>
+                        <td>Control de múltiples motores con <strong>L293D</strong>, relevadores, LEDs y servomotores.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D14 (TX3) / D15 (RX3)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">Serial3</span>[cite: 1]</td>
+                        <td>Tercer puerto serial hardware[cite: 1]</td>
+                        <td>Conexión con módulos GPS (NEO-6M) sin emular puertos por software.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D16 (TX2) / D17 (RX2)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">Serial2</span>[cite: 1]</td>
+                        <td>Segundo puerto serial hardware[cite: 1]</td>
+                        <td>Módulos Bluetooth HC-05 / HC-06 o pantallas Nextion.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D18 (TX1) / D19 (RX1)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">Serial1 / INT4-5</span>[cite: 1]</td>
+                        <td>Primer puerto serial + Interrupciones[cite: 1]</td>
+                        <td>Módulos GSM SIM800L o interfaces RS-485.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D20 (SDA) / D21 (SCL)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">I2C / INT2-3</span>[cite: 1]</td>
+                        <td>Bus I2C principal + Interrupciones[cite: 1]</td>
+                        <td>Conexión de sensores <strong>MPU6050</strong>, pantallas OLED SSD1306 y displays LCD 16x2.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D22 a D43</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO Digital</span>[cite: 1]</td>
+                        <td>Header trasero 2x18 (22 pines)[cite: 1]</td>
+                        <td>Módulos de relés múltiples de 8/16 canales, teclados matriciales 4x4 y displays de 7 segmentos.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D44 (~), D45 (~), D46 (~)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">PWM Extra</span>[cite: 1]</td>
+                        <td>3 canales PWM adicionales[cite: 1]</td>
+                        <td>Control de velocidad para motores auxiliares y atenuación de iluminación.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D47 a D49</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO Digital</span>[cite: 1]</td>
+                        <td>Entrada / Salida digital[cite: 1]</td>
+                        <td>Señales de control y sensores de fin de carrera.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D50 (MISO)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">SPI MISO</span>[cite: 1]</td>
+                        <td>Master In Slave Out[cite: 1]</td>
+                        <td>Recepción de datos desde módulos SPI (RFID RC522, SD Card).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D51 (MOSI)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">SPI MOSI</span>[cite: 1]</td>
+                        <td>Master Out Slave In[cite: 1]</td>
+                        <td>Envío de datos del bus SPI.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D52 (SCK)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">SPI SCK</span>[cite: 1]</td>
+                        <td>Reloj del bus SPI[cite: 1]</td>
+                        <td>Línea de reloj síncrona.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>D53 (SS)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">SPI SS</span>[cite: 1]</td>
+                        <td>Slave Select por hardware[cite: 1]</td>
+                        <td>Debe configurarse como SALIDA si el MEGA opera como SPI Master.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A0 a A15</strong>[cite: 1]</td>
+                        <td><span class="badge pin-adc">16 Canales ADC</span>[cite: 1]</td>
+                        <td>10 bits (0 a 1023) a 5V[cite: 1]</td>
+                        <td>Lectura simultánea de potenciómetros, fotoceldas, sensores de humedad de suelo y joysticks duales.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>5V, 3.3V, VIN, GND</strong>[cite: 1]</td>
+                        <td><span class="badge pin-pwr">Alimentación</span>[cite: 1]</td>
+                        <td>Entrada 7-12V (Jack DC / VIN)[cite: 1]</td>
+                        <td>Líneas de energía para shields y periféricos externos.[cite: 1]</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VISTA 3: NODEMCU ESP-WROOM-32 + SHIELD ================= -->
+        <div id="view-shield" style="display: none;">
+          <header class="py-2 mb-3 border-bottom border-secondary">
+            <span class="badge badge-board mb-2 px-3 py-1 text-uppercase fw-semibold">Plataforma de Experimentación IoT[cite: 1]</span>
+            <h1 class="h2 fw-bold text-white">ESP32 (HW-394 / 30 Pines) + Shield GVS[cite: 1]</h1>
+            <p class="text-mid-gray mb-2 small">
+              Módulo de 30 pines con microprocesador Dual-Core Xtensa LX6 (240 MHz) montado en la placa base con alimentación seleccionable (3.3V / 5V) y terminales GVS para conexión directa de sensores y actuadores[cite: 1].
+            </p>
+          </header>
+
+          <!-- 8 Tarjetas Interactivas con Modal (ESP32 Shield) -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-white mb-0"><i class="bi bi-grid-fill text-cyan me-2"></i>Componentes del Kit (Clic en cada cuadro para ver detalles)[cite: 1]</h6>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('tensilica')">
+                <i class="bi bi-cpu fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Tensilica Xtensa LX6[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Dual-Core 32-bit @ 240 MHz (hasta 600 DMIPS)[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('ch9102x')">
+                <i class="bi bi-usb-symbol fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Chip UART CH9102X[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Conversor USB-Serie de bajo consumo para carga rápida[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('crypto')">
+                <i class="bi bi-shield-lock-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Criptografía HW[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">AES, SHA-2, RSA, ECC, RNG y 1024-bit OTP[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('nodemcu_mem')">
+                <i class="bi bi-memory fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Memorias Internas[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">4MB Flash, 520KB SRAM, 448KB ROM, 16KB RTC[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('gvs')">
+                <i class="bi bi-diagram-3 fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Buses GVS (3 Pines)[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Tríadas de Señal, VCC y GND para sensores y servos[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('jumper')">
+                <i class="bi bi-toggle-on fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Jumper (3.3V / 5V)[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Conmuta el riel 'V' de la placa base a 3.3V o 5V[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('power')">
+                <i class="bi bi-lightning-charge-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Jack DC (6.5V - 16V)[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Regulador LDO integrado para cargas de alta corriente[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('dualusb')">
+                <i class="bi bi-usb-c fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Dual USB Power[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Conectores USB-C (5V) y Micro-USB (3.3V/5V)[cite: 1].</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Síntesis Rápida de Periféricos NodeMCU ESP32 -->
+          <div class="card bg-card border-secondary p-3 mb-4">
+            <h5 class="text-info mb-2"><i class="bi bi-lightning-charge-fill me-2"></i>Síntesis de Periféricos &amp; Conexiones (NodeMCU 30 Pines)[cite: 1]</h5>
+            <div class="row g-2">
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-gpio mb-1">GPIO de Propósito General &amp; PWM[cite: 1]</span>
+                  <p class="small text-white mb-1"><strong>GPIO 4, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33[cite: 1]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Encender/Apagar LEDs:</strong> GPIO 4, 16, 17, 27, 32, 33 (LED integrado azul en <strong>GPIO 2</strong>)[cite: 1].<br>
+                    • <strong>Control de Motores (L293D / L298N / Servos):</strong> Cualquier GPIO seguro soporta modulación PWM por hardware (LEDC)[cite: 1].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-adc mb-1">ADC (Entradas Analógicas)[cite: 1]</span>
+                  <p class="small text-white mb-1"><strong>ADC1: GPIO 32, 33, 34, 35, 36 (VP), 39 (VN)[cite: 1]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Lectura de Potenciómetros, LDR, LM35:</strong> Rango de 0 a 3.3V (12 bits: 0 a 4095)[cite: 1].<br>
+                    • <em>Nota:</em> Usa siempre los canales de <strong>ADC1</strong> cuando utilices Wi-Fi (ADC2 queda bloqueado por la radio)[cite: 1].
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-xl-4">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-comm mb-1">Buses de Comunicación (I2C / SPI / UART)[cite: 1]</span>
+                  <p class="small text-white mb-1"><strong>I2C: SDA (GPIO 21) | SCL (GPIO 22)[cite: 1]</strong></p>
+                  <small class="text-mid-gray d-block">
+                    • <strong>Sensores I2C (MPU6050, BMP280, LCD I2C):</strong> GPIO 21 y GPIO 22[cite: 1].<br>
+                    • <strong>Bus SPI:</strong> MOSI (23), MISO (19), SCK (18), CS (5)[cite: 1].<br>
+                    • <strong>UART2 Libre:</strong> TX2 (GPIO 17), RX2 (GPIO 16)[cite: 1].
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenedor Doble: Diagrama Visual y Tabla Didáctica -->
+          <div class="row g-3 mb-4">
+            <div class="col-xl-5">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="text-info mb-0"><i class="bi bi-image me-1"></i> Diagrama de la Placa (HW-394)[cite: 1]</h6>
+                  <span class="badge badge-board">30 Pines[cite: 1]</span>
+                </div>
+                <div class="text-center py-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 540" class="svg-container" style="background:#0f172a; border-radius:8px;">
+                    <rect x="110" y="20" width="200" height="500" rx="14" fill="#090d16" stroke="#334155" stroke-width="2"/>
+                    <rect x="130" y="40" width="160" height="150" rx="6" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+                    <text x="210" y="105" fill="#94a3b8" font-size="13" font-weight="bold" text-anchor="middle">ESP-WROOM-32</text>
+                    <text x="210" y="125" fill="#64748b" font-size="10" text-anchor="middle">Wi-Fi + BT 4.2 BLE</text>
+                    <text x="210" y="145" fill="#38bdf8" font-size="9" text-anchor="middle">Tensilica Dual LX6 @ 240MHz</text>
+                    <rect x="175" y="250" width="70" height="55" rx="3" fill="#111827" stroke="#475569"/>
+                    <text x="210" y="282" fill="#cbd5e1" font-size="10" font-weight="bold" text-anchor="middle">CH9102X</text>
+                    <rect x="125" y="470" width="30" height="18" rx="3" fill="#334155" stroke="#94a3b8"/>
+                    <text x="140" y="483" fill="#f8fafc" font-size="8" font-weight="bold" text-anchor="middle">EN</text>
+                    <rect x="265" y="470" width="30" height="18" rx="3" fill="#334155" stroke="#94a3b8"/>
+                    <text x="280" y="483" fill="#f8fafc" font-size="8" font-weight="bold" text-anchor="middle">BOOT</text>
+                    <rect x="175" y="485" width="70" height="30" rx="4" fill="#475569" stroke="#94a3b8" stroke-width="1.5"/>
+                    <text x="210" y="504" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">TYPE-C USB</text>
+                    <circle cx="120" cy="205" r="4" fill="#cbd5e1"/><text x="105" y="208" fill="#cbd5e1" font-size="9" font-weight="bold" text-anchor="end">EN</text>
+                    <circle cx="120" cy="223" r="4" fill="#fbbf24"/><text x="105" y="226" fill="#fbbf24" font-size="9" font-weight="bold" text-anchor="end">VP (GPIO36)</text>
+                    <circle cx="120" cy="241" r="4" fill="#fbbf24"/><text x="105" y="244" fill="#fbbf24" font-size="9" font-weight="bold" text-anchor="end">VN (GPIO39)</text>
+                    <circle cx="120" cy="259" r="4" fill="#e879f9"/><text x="105" y="262" fill="#e879f9" font-size="9" font-weight="bold" text-anchor="end">GPIO 34</text>
+                    <circle cx="120" cy="277" r="4" fill="#e879f9"/><text x="105" y="280" fill="#e879f9" font-size="9" font-weight="bold" text-anchor="end">GPIO 35</text>
+                    <circle cx="120" cy="295" r="4" fill="#34d399"/><text x="105" y="298" fill="#34d399" font-size="9" font-weight="bold" text-anchor="end">GPIO 32</text>
+                    <circle cx="120" cy="313" r="4" fill="#34d399"/><text x="105" y="316" fill="#34d399" font-size="9" font-weight="bold" text-anchor="end">GPIO 33</text>
+                    <circle cx="120" cy="331" r="4" fill="#34d399"/><text x="105" y="334" fill="#34d399" font-size="9" font-weight="bold" text-anchor="end">GPIO 25 (DAC1)</text>
+                    <circle cx="120" cy="349" r="4" fill="#34d399"/><text x="105" y="352" fill="#34d399" font-size="9" font-weight="bold" text-anchor="end">GPIO 26 (DAC2)</text>
+                    <circle cx="120" cy="367" r="4" fill="#34d399"/><text x="105" y="370" fill="#34d399" font-size="9" font-weight="bold" text-anchor="end">GPIO 27</text>
+                    <circle cx="120" cy="385" r="4" fill="#60a5fa"/><text x="105" y="388" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="end">GPIO 14 (CLK)</text>
+                    <circle cx="120" cy="403" r="4" fill="#60a5fa"/><text x="105" y="406" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="end">GPIO 12 (MISO)</text>
+                    <circle cx="120" cy="421" r="4" fill="#60a5fa"/><text x="105" y="406" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="end">GPIO 13 (MOSI)</text>
+                    <circle cx="120" cy="439" r="4" fill="#64748b"/><text x="105" y="442" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="end">GND</text>
+                    <circle cx="120" cy="457" r="4" fill="#f87171"/><text x="105" y="460" fill="#f87171" font-size="9" font-weight="bold" text-anchor="end">VIN (5V IN)</text>
+                    <circle cx="300" cy="205" r="4" fill="#60a5fa"/><text x="315" y="208" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 23 (MOSI)</text>
+                    <circle cx="300" cy="223" r="4" fill="#60a5fa"/><text x="315" y="226" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 22 (SCL)</text>
+                    <circle cx="300" cy="241" r="4" fill="#38bdf8"/><text x="315" y="244" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="start">TX0 (GPIO 1)</text>
+                    <circle cx="300" cy="259" r="4" fill="#38bdf8"/><text x="315" y="262" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="start">RX0 (GPIO 3)</text>
+                    <circle cx="300" cy="277" r="4" fill="#60a5fa"/><text x="315" y="280" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 21 (SDA)</text>
+                    <circle cx="300" cy="295" r="4" fill="#60a5fa"/><text x="315" y="298" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 19 (MISO)</text>
+                    <circle cx="300" cy="313" r="4" fill="#60a5fa"/><text x="315" y="316" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 18 (SCK)</text>
+                    <circle cx="300" cy="331" r="4" fill="#34d399"/><text x="315" y="334" fill="#34d399" font-size="9" font-weight="bold" text-anchor="start">GPIO 05 (CS)</text>
+                    <circle cx="300" cy="349" r="4" fill="#60a5fa"/><text x="315" y="352" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 17 (TX2)</text>
+                    <circle cx="300" cy="367" r="4" fill="#60a5fa"/><text x="315" y="370" fill="#60a5fa" font-size="9" font-weight="bold" text-anchor="start">GPIO 16 (RX2)</text>
+                    <circle cx="300" cy="385" r="4" fill="#34d399"/><text x="315" y="388" fill="#34d399" font-size="9" font-weight="bold" text-anchor="start">GPIO 04</text>
+                    <circle cx="300" cy="403" r="4" fill="#fbbf24"/><text x="315" y="406" fill="#fbbf24" font-size="9" font-weight="bold" text-anchor="start">GPIO 02 (LED)</text>
+                    <circle cx="300" cy="421" r="4" fill="#34d399"/><text x="315" y="424" fill="#34d399" font-size="9" font-weight="bold" text-anchor="start">GPIO 15</text>
+                    <circle cx="300" cy="439" r="4" fill="#64748b"/><text x="315" y="442" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="start">GND</text>
+                    <circle cx="300" cy="457" r="4" fill="#f87171"/><text x="315" y="460" fill="#f87171" font-size="9" font-weight="bold" text-anchor="start">3V3 (Salida 3.3V)</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-7">
+              <div class="card bg-dark border-secondary p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="text-info mb-0"><i class="bi bi-table me-1"></i> Tabla de Funciones y Usos[cite: 1]</h6>
+                  <span class="badge badge-board">Base GVS[cite: 1]</span>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 470px; overflow-y: auto;">
+                  <table class="table table-dark table-hover table-bordered pin-table align-middle small mb-0">
+                    <thead class="table-secondary text-dark sticky-top">
+                      <tr>
+                        <th>Pin Físico[cite: 1]</th>
+                        <th>Función Técnica[cite: 1]</th>
+                        <th>Tríada en Shield[cite: 1]</th>
+                        <th>Aplicación Recomendada[cite: 1]</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>EN</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gnd">Reset</span>[cite: 1]</td>
+                        <td>GND | VCC | EN[cite: 1]</td>
+                        <td>Reinicio del microcontrolador.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>VP (GPIO 36)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-adc">ADC1_CH0</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO36[cite: 1]</td>
+                        <td>Lectura analógica (Potenciómetros, LDR). <em>Solo entrada.</em>[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>VN (GPIO 39)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-adc">ADC1_CH3</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO39[cite: 1]</td>
+                        <td>Lectura analógica. <em>Solo entrada.</em>[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 34</strong>[cite: 1]</td>
+                        <td><span class="badge pin-warn">ADC1_CH6 (Solo IN)</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO34[cite: 1]</td>
+                        <td>Entrada de sensores o pulsadores. <strong>No soporta salida (LEDs/Relés).</strong>[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 35</strong>[cite: 1]</td>
+                        <td><span class="badge pin-warn">ADC1_CH7 (Solo IN)</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO35[cite: 1]</td>
+                        <td>Entrada analógica. Sin resistencia pull-up interna.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 32</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO / Touch9 / ADC</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO32[cite: 1]</td>
+                        <td>LEDs, relevadores, PWM para servomotores y puente H (L293D).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 33</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO / Touch8 / ADC</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO33[cite: 1]</td>
+                        <td>Salidas digitales y control PWM.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 25</strong>[cite: 1]</td>
+                        <td><span class="badge pin-adc">DAC1 / ADC2_8</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO25[cite: 1]</td>
+                        <td>Salida analógica real por hardware (Voltaje 0-3.3V).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 26</strong>[cite: 1]</td>
+                        <td><span class="badge pin-adc">DAC2 / ADC2_9</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO26[cite: 1]</td>
+                        <td>Salida analógica real número 2.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 27</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO / Touch7</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO27[cite: 1]</td>
+                        <td>Propósito general (PWM y señales lógicas).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 14</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">HSPI_CLK</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO14[cite: 1]</td>
+                        <td>Reloj SPI para pantallas TFT o módulos SD.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 12</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">HSPI_MISO</span>[cite: 1]</td>
+                        <td>Bus SPI. (Pin de arranque: no forzar a HIGH al iniciar).[cite: 1]</td>
+                        <td>Línea SPI[cite: 1].</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 13</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">HSPI_MOSI</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO13[cite: 1]</td>
+                        <td>Datos SPI hacia periféricos.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GND</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gnd">GND (0V)</span>[cite: 1]</td>
+                        <td>GND | GND | GND[cite: 1]</td>
+                        <td>Tierra común del circuito.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>VIN</strong>[cite: 1]</td>
+                        <td><span class="badge pin-pwr">5V Entrada</span>[cite: 1]</td>
+                        <td>GND | VCC | VIN[cite: 1]</td>
+                        <td>Alimentación externa regulada de 5V.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 23</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">VSPI_MOSI</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO23[cite: 1]</td>
+                        <td>Bus SPI Principal (Pantallas, RFID, etc.).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 22</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">I2C SCL</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO22[cite: 1]</td>
+                        <td>Reloj I2C para <strong>MPU6050</strong>, pantallas OLED y LCD 16x2[cite: 1].</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 01 (TX0)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">UART0 TX</span>[cite: 1]</td>
+                        <td>GND | VCC | TX0[cite: 1]</td>
+                        <td>Transmisión serial USB con PC. (Evitar en prácticas normales).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 03 (RX0)</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">UART0 RX</span>[cite: 1]</td>
+                        <td>GND | VCC | RX0[cite: 1]</td>
+                        <td>Recepción serial USB con PC. (Evitar en prácticas normales).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 21</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">I2C SDA</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO21[cite: 1]</td>
+                        <td>Línea de datos I2C para sensores (MPU6050, BMP280)[cite: 1].</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 19</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">VSPI_MISO</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO19[cite: 1]</td>
+                        <td>Bus SPI Principal (Recepción de datos).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 18</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">VSPI_SCK</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO18[cite: 1]</td>
+                        <td>Bus SPI Principal (Reloj).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 05</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">VSPI_CS / GPIO</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO05[cite: 1]</td>
+                        <td>Chip Select para módulos SPI o salida digital estándar.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 17</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">UART2 TX</span>[cite: 1]</td>
+                        <td>GND | VCC | TX2[cite: 1]</td>
+                        <td>Transmisión serial libre (Módulos GPS, Bluetooth HC-05).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 16</strong>[cite: 1]</td>
+                        <td><span class="badge pin-comm">UART2 RX</span>[cite: 1]</td>
+                        <td>GND | VCC | RX2[cite: 1]</td>
+                        <td>Recepción serial libre.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 04</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO / ADC2_0</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO04[cite: 1]</td>
+                        <td>Entrada/Salida de propósito general.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 02</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">LED Azul Onboard</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO02[cite: 1]</td>
+                        <td>Conectado al LED azul integrado. Ideal para pruebas de parpadeo (Blink).[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GPIO 15</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gpio">GPIO / ADC2_3</span>[cite: 1]</td>
+                        <td>GND | VCC | GPIO15[cite: 1]</td>
+                        <td>Entrada/Salida de propósito general.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>GND</strong>[cite: 1]</td>
+                        <td><span class="badge pin-gnd">GND (0V)</span>[cite: 1]</td>
+                        <td>GND | GND | GND[cite: 1]</td>
+                        <td>Línea de tierra compartida.[cite: 1]</td>
+                      </tr>
+                      <tr>
+                        <td><strong>3V3</strong>[cite: 1]</td>
+                        <td><span class="badge pin-pwr">3.3V Salida</span>[cite: 1]</td>
+                        <td>GND | VCC | 3V3[cite: 1]</td>
+                        <td>Salida regulada para alimentar sensores a 3.3V.[cite: 1]</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pautas de Conexión Segura -->
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="p-3 bg-dark rounded border border-warning">
+                <h6 class="text-warning"><i class="bi bi-shield-exclamation me-2"></i>1. Límite de Voltaje (3.3V Máximo)[cite: 1]</h6>
+                <p class="small text-secondary mb-0">
+                  Los pines del ESP32 <strong>no son tolerantes a 5V</strong>[cite: 1]. Aunque el Shield suministre 5V a través de su fila 'V' para alimentar motores o el MPU6050, las señales que regresen hacia el pin 'S' no deben superar 3.3V[cite: 1].
+                </p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-dark rounded border border-info">
+                <h6 class="text-info"><i class="bi bi-arrow-down-right-square me-2"></i>2. Pines de Solo Entrada (34, 35, 36, 39)[cite: 1]</h6>
+                <p class="small text-secondary mb-0">
+                  Estos cuatro pines <strong>no pueden encender LEDs ni activar el L293D</strong> porque carecen de transistores de salida por hardware; utilízalos exclusivamente para leer potenciómetros o sensores analógicos[cite: 1].
+                </p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-dark rounded border border-success">
+                <h6 class="text-success"><i class="bi bi-cpu-fill me-2"></i>3. Pines Recomendados para Proyectos[cite: 1]</h6>
+                <p class="small text-secondary mb-0">
+                  Para no generar conflictos al programar o reiniciar, utiliza preferentemente: <strong>GPIO 4, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32 y 33</strong>[cite: 1].
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VISTA 4: FREENOVE ESP32-S3 WROOM ================= -->
+        <div id="view-s3" style="display: none;">
+          <header class="py-2 mb-3 border-bottom border-secondary">
+            <span class="badge badge-board mb-2 px-3 py-1 text-uppercase fw-semibold">Aceleración Vectorial IA &amp; Visión | Dual Core Xtensa LX7</span>
+            <h1 class="h2 fw-bold text-white">Freenove ESP32-S3 WROOM</h1>
+            <p class="text-mid-gray mb-2 small">
+              Módulo de alto rendimiento basado en el SoC <strong>ESP32-S3</strong> (Dual-Core Xtensa LX7 @ 240 MHz) con extensiones vectoriales para procesamiento digital de señales (DSP), interfaz de cámara DVP, LED direccionable RGB WS2812, USB OTG nativo y Wi-Fi 2.4 GHz + Bluetooth 5 (LE).
+            </p>
+          </header>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-white mb-0"><i class="bi bi-grid-fill me-2 text-cyan"></i>Módulos de Hardware (Clic en cada cuadro para ver detalles)</h6>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_mcu')">
+                <i class="bi bi-cpu-fill fs-4 mb-1 d-block text-cyan"></i>
+                <h6 class="text-white mb-1 small fw-bold">Xtensa Dual LX7</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">240 MHz con aceleración vectorial para redes neuronales y DSP.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_cam')">
+                <i class="bi bi-camera-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Interfaz Cámara DVP</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Pines dedicados CAM_SIOD, SIOC, VSYNC, HREF, PCLK y Y2-Y9.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_ws2812')">
+                <i class="bi bi-lightbulb-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">LED RGB WS2812</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">LED direccionable integrado en placa controlado por <strong>GPIO48</strong>.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_usb')">
+                <i class="bi bi-usb-symbol fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">USB OTG Nativo</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">D+ (GPIO19) y D- (GPIO20) para depuración JTAG y emulación USB.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_mem')">
+                <i class="bi bi-memory fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Flash &amp; PSRAM</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">512KB SRAM interna + 8MB Octal Flash / 8MB PSRAM (GPIO35-37).</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_touch')">
+                <i class="bi bi-hand-index-thumb-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">14 Sensores Touch</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Pines T1 a T14 para botones y superficies táctiles capacitivas.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_rf')">
+                <i class="bi bi-wifi fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Wi-Fi &amp; Bluetooth 5</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Wi-Fi 802.11 b/g/n + Bluetooth 5.0 LE con soporte de largo alcance.</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('s3_sd')">
+                <i class="bi bi-sd-card-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Ranura MicroSD</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Conectada a SD_CMD (38), SD_CLK (39) y SD_DATA (40).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VISTA 5: GUITION ESP32-P4-M3-DEV ================= -->
+        <div id="view-p4" style="display: none;">
+          <header class="py-2 mb-3 border-bottom border-secondary">
+            <span class="badge badge-board mb-2 px-3 py-1 text-uppercase fw-semibold">Arquitectura Multimedia &amp; Visión | RISC-V Dual Core + C6[cite: 1]</span>
+            <h1 class="h2 fw-bold text-white">Guition JC-ESP32-P4-M3-DEV[cite: 1]</h1>
+            <p class="text-mid-gray mb-2 small">
+              SoC <strong>ESP32-P4NRW32</strong> (Dual-Core RISC-V @ 360 MHz) con 32MB PSRAM, aceleración MIPI CSI/DSI, Ethernet IP101 y coprocesador inalámbrico <strong>ESP32-C6</strong> comunicado por SDIO[cite: 1].
+            </p>
+          </header>
+
+          <!-- 8 Tarjetas Interactivas con Modal (P4) -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="text-white mb-0"><i class="bi bi-grid-fill text-cyan me-2"></i>Módulos de Hardware (Clic en cada cuadro para ver detalles)[cite: 1]</h6>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('mcu')">
+                <i class="bi bi-cpu-fill fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">ESP32-P4 SoC[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Dual RISC-V @ 360 MHz con FPU/DSP y aceleración IA[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('c6')">
+                <i class="bi bi-wifi fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">ESP32-C6 Copro[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Wi-Fi 6 (2.4GHz) y Bluetooth 5/BLE vía SDIO 4-bit[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('memory')">
+                <i class="bi bi-memory fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Memoria Onboard[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">32MB PSRAM in-package + 16MB Flash NOR[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('multimedia')">
+                <i class="bi bi-camera-video-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">MIPI CSI / DSI[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Cámara con ISP por hardware y salida para pantalla[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('network')">
+                <i class="bi bi-ethernet fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Ethernet 100M[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Transceptor PHY IP101 integrado con puerto RJ45[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('usb')">
+                <i class="bi bi-usb-symbol fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Triple USB Type-C[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">High-Speed 480Mbps + Full-Speed OTG + USB-UART[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('audio')">
+                <i class="bi bi-soundwave fs-4 text-cyan mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Audio &amp; TF Card[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">Micrófono, altavoz 8Ω/2W y zócalo MicroSD SDIO 3.0[cite: 1].</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3 col-xl-3">
+              <div class="interactive-card p-3 h-100" onclick="showDetail('industrial')">
+                <i class="bi bi-diagram-3-fill fs-4 text-white mb-1 d-block"></i>
+                <h6 class="text-white mb-1 small fw-bold">Conectores MX1.25[cite: 1]</h6>
+                <small class="text-mid-gray d-block" style="font-size: 0.72rem;">UART1, RS-485 diferencial, I2C y conector FPC táctil[cite: 1].</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Síntesis Rápida de Periféricos P4 -->
+          <div class="card bg-card border-secondary p-3 mb-4">
+            <h5 class="text-info mb-2"><i class="bi bi-lightning-charge-fill me-2"></i>Síntesis de Periféricos &amp; Conexiones (Header 2*13P)[cite: 1]</h5>
+            <div class="row g-2">
+              <div class="col-md-6 col-xl-3">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-gpio mb-1">GPIO Digital &amp; PWM[cite: 1]</span>
+                  <p class="small text-light mb-1"><strong>GPIO 01, 02, 03, 04, 05, 20, 32, 33, 45, 46, 47[cite: 1]</strong></p>
+                  <small class="text-secondary d-block">Ideales para encender LEDs, zumbadores, relevadores y generar PWM para servomotores o puentes H (L293D / L298N)[cite: 1].</small>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-comm mb-1">Bus I2C (Sensores / OLED)[cite: 1]</span>
+                  <p class="small text-light mb-1"><strong>ES I2C_SDA &amp; ES I2C_SCL[cite: 1]</strong></p>
+                  <small class="text-secondary d-block">Pines dedicados para sensores como <strong>MPU6050</strong> (acelerómetro/giroscopio), BMP280, RTC DS3231 o displays OLED SSD1306[cite: 1].</small>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-c6 mb-1">Líneas de Control Copro C6[cite: 1]</span>
+                  <p class="small text-light mb-1"><strong>C6_U0RXD, C6_U0TXD, C6_IO9, C6_CHIP_PU[cite: 1]</strong></p>
+                  <small class="text-secondary d-block">Conectados internamente al módem ESP32-C6. Reservados para depuración o flasheo directo del coprocesador inalámbrico[cite: 1].</small>
+                </div>
+              </div>
+              <div class="col-md-6 col-xl-3">
+                <div class="p-2 quick-card h-100">
+                  <span class="badge pin-pwr mb-1">Rieles de Alimentación[cite: 1]</span>
+                  <p class="small text-light mb-1"><strong>5V, 3V3 y GND[cite: 1]</strong></p>
+                  <small class="text-secondary d-block">Salidas de 3.3V para módulos lógicos y líneas de 5V para alimentar actuadores, sensores analógicos y tarjetas de potencia[cite: 1].</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pestañas Adicionales de la ESP32-P4 -->
+          <ul class="nav nav-pills mb-3">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#p4-tab-diagram">Diagrama &amp; Pinout 2*13P</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#p4-tab-sdio">Bus SDIO (P4 + C6)</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#p4-tab-map">Mapeo 1-22 Hardware</button></li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Sub-Pestaña 1: Diagrama SVG + Tabla 2*13P -->
+            <div class="tab-pane fade show active" id="p4-tab-diagram">
+              <div class="row g-3 mb-4">
+                <div class="col-xl-6">
+                  <div class="card bg-dark border-secondary p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="text-info mb-0"><i class="bi bi-diagram-2-fill me-1"></i> Distribución Física en Placa[cite: 1]</h6>
+                      <span class="badge badge-board">JC-ESP32P4-M3[cite: 1]</span>
+                    </div>
+                    <div class="text-center py-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 440" class="svg-container" style="background:#090d16; border-radius:10px; border: 1px solid #334155;">
+                        <rect x="25" y="20" width="600" height="400" rx="16" fill="#111827" stroke="#334155" stroke-width="2"/>
+                        <rect x="150" y="150" width="190" height="190" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+                        <rect x="160" y="160" width="170" height="170" rx="4" fill="#0f172a" stroke="#475569"/>
+                        <text x="245" y="205" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">GUITION</text>
+                        <text x="245" y="225" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle">JC-ESP32P4-M3</text>
+                        <text x="245" y="250" fill="#94a3b8" font-size="10" text-anchor="middle">SoC: ESP32-P4NRW32</text>
+                        <text x="245" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">32M PSRAM | 16M Flash</text>
+                        <text x="245" y="286" fill="#60a5fa" font-size="10" font-weight="bold" text-anchor="middle">Copro: ESP32-C6 (WiFi 6)</text>
+                        <text x="245" y="312" fill="#cbd5e1" font-size="11" text-anchor="middle">CE  FC</text>
+                        <rect x="35" y="130" width="15" height="30" rx="3" fill="#ef4444" stroke="#f87171"/>
+                        <text x="42" y="175" fill="#ef4444" font-size="8" font-weight="bold" text-anchor="middle">ANT</text>
+                        <rect x="60" y="25" width="28" height="16" rx="3" fill="#334155" stroke="#94a3b8"/>
+                        <text x="74" y="36" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">BOOT</text>
+                        <rect x="100" y="25" width="28" height="16" rx="3" fill="#334155" stroke="#94a3b8"/>
+                        <text x="114" y="36" fill="#cbd5e1" font-size="7" font-weight="bold" text-anchor="middle">RESET</text>
+                        <circle cx="150" cy="33" r="7" fill="#1e293b" stroke="#94a3b8"/>
+                        <text x="150" y="52" fill="#94a3b8" font-size="7" text-anchor="middle">MIC</text>
+                        <rect x="180" y="25" width="25" height="16" rx="2" fill="#334155" stroke="#fbbf24"/>
+                        <text x="192" y="36" fill="#fbbf24" font-size="7" font-weight="bold" text-anchor="middle">SPK</text>
+                        <rect x="255" y="23" width="70" height="65" rx="3" fill="#1e293b" stroke="#64748b"/>
+                        <text x="290" y="58" fill="#cbd5e1" font-size="9" font-weight="bold" text-anchor="middle">TF CARD</text>
+                        <rect x="355" y="25" width="25" height="16" rx="2" fill="#334155" stroke="#ef4444"/>
+                        <text x="367" y="36" fill="#f87171" font-size="7" font-weight="bold" text-anchor="middle">BAT</text>
+                        <rect x="395" y="27" width="16" height="12" rx="2" fill="#475569"/>
+                        <rect x="585" y="45" width="35" height="40" rx="4" fill="#334155" stroke="#38bdf8"/>
+                        <text x="565" y="68" fill="#38bdf8" font-size="8" font-weight="bold" text-anchor="end">USB HS (480M)</text>
+                        <rect x="585" y="105" width="35" height="40" rx="4" fill="#334155" stroke="#94a3b8"/>
+                        <text x="565" y="128" fill="#cbd5e1" font-size="8" font-weight="bold" text-anchor="end">USB FS (OTG)</text>
+                        <rect x="585" y="165" width="35" height="40" rx="4" fill="#334155" stroke="#fbbf24"/>
+                        <text x="565" y="188" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="end">USB-UART</text>
+                        <rect x="545" y="250" width="75" height="75" rx="4" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+                        <rect x="555" y="260" width="55" height="55" rx="2" fill="#0f172a"/>
+                        <text x="582" y="292" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">RJ45 100M</text>
+                        <text x="582" y="306" fill="#6ee7b7" font-size="8" text-anchor="middle">IP101 PHY</text>
+                        <rect x="365" y="215" width="18" height="135" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+                        <text x="374" y="285" fill="#f87171" font-size="9" font-weight="bold" transform="rotate(-90 374,285)" text-anchor="middle">MIPI DSI (LCD)</text>
+                        <rect x="410" y="215" width="18" height="135" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                        <text x="419" y="285" fill="#38bdf8" font-size="9" font-weight="bold" transform="rotate(-90 419,285)" text-anchor="middle">MIPI CSI (CAM)</text>
+                        <rect x="140" y="385" width="30" height="25" rx="3" fill="#1e293b" stroke="#60a5fa"/>
+                        <text x="155" y="401" fill="#60a5fa" font-size="7" font-weight="bold" text-anchor="middle">TOUCH</text>
+                        <rect x="195" y="388" width="35" height="20" rx="2" fill="#1e293b" stroke="#cbd5e1"/>
+                        <text x="212" y="401" fill="#cbd5e1" font-size="7" text-anchor="middle">I2C HS</text>
+                        <rect x="250" y="388" width="35" height="20" rx="2" fill="#1e293b" stroke="#fbbf24"/>
+                        <text x="267" y="401" fill="#fbbf24" font-size="7" font-weight="bold" text-anchor="middle">RS485</text>
+                        <rect x="305" y="388" width="35" height="20" rx="2" fill="#1e293b" stroke="#34d399"/>
+                        <text x="322" y="401" fill="#34d399" font-size="7" text-anchor="middle">UART1</text>
+                        <rect x="35" y="195" width="30" height="210" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+                        <circle cx="43" cy="207" r="3" fill="#f87171"/>
+                        <circle cx="43" cy="222" r="3" fill="#f87171"/>
+                        <circle cx="43" cy="237" r="3" fill="#94a3b8"/>
+                        <circle cx="43" cy="252" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="267" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="282" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="297" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="312" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="327" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="342" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="357" r="3" fill="#34d399"/>
+                        <circle cx="43" cy="372" r="3" fill="#60a5fa"/>
+                        <circle cx="43" cy="387" r="3" fill="#60a5fa"/>
+                        <circle cx="57" cy="207" r="3" fill="#f87171"/>
+                        <circle cx="57" cy="222" r="3" fill="#f87171"/>
+                        <circle cx="57" cy="237" r="3" fill="#94a3b8"/>
+                        <circle cx="57" cy="252" r="3" fill="#fbbf24"/>
+                        <circle cx="57" cy="267" r="3" fill="#34d399"/>
+                        <circle cx="57" cy="282" r="3" fill="#34d399"/>
+                        <circle cx="57" cy="297" r="3" fill="#34d399"/>
+                        <circle cx="57" cy="312" r="3" fill="#94a3b8"/>
+                        <circle cx="57" cy="327" r="3" fill="#f87171"/>
+                        <circle cx="57" cy="342" r="3" fill="#38bdf8"/>
+                        <circle cx="57" cy="357" r="3" fill="#38bdf8"/>
+                        <circle cx="57" cy="372" r="3" fill="#38bdf8"/>
+                        <circle cx="57" cy="387" r="3" fill="#38bdf8"/>
+                        <text x="75" y="300" fill="#38bdf8" font-size="9" font-weight="bold" transform="rotate(-90 75,300)" text-anchor="middle">HEADER 2*13P (GPIO)</text>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-xl-6">
+                  <div class="card bg-dark border-secondary p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="text-info mb-0"><i class="bi bi-table me-1"></i> Pinout del Header 2*13P[cite: 1]</h6>
+                      <span class="badge badge-board">26 Pines[cite: 1]</span>
+                    </div>
+                    <div class="table-responsive" style="max-height: 410px; overflow-y: auto;">
+                      <table class="table table-dark table-hover table-bordered pin-table align-middle small mb-0">
+                        <thead class="table-secondary text-dark sticky-top">
+                          <tr>
+                            <th>Pin (Izq.)[cite: 1]</th>
+                            <th>Tipo / Función[cite: 1]</th>
+                            <th>Pin (Der.)[cite: 1]</th>
+                            <th>Tipo / Función[cite: 1]</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong>3V3</strong>[cite: 1]</td>
+                            <td><span class="badge pin-pwr">Salida 3.3V</span>[cite: 1]</td>
+                            <td><strong>5V</strong>[cite: 1]</td>
+                            <td><span class="badge pin-pwr">Entrada/Salida 5V</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>3V3</strong>[cite: 1]</td>
+                            <td><span class="badge pin-pwr">Salida 3.3V</span>[cite: 1]</td>
+                            <td><strong>5V</strong>[cite: 1]</td>
+                            <td><span class="badge pin-pwr">Entrada/Salida 5V</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GND</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gnd">Tierra</span>[cite: 1]</td>
+                            <td><strong>GND</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gnd">Tierra</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 01</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>NC</strong>[cite: 1]</td>
+                            <td><span class="badge pin-warn">No Conectado</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 02</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>GPIO 47</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 03</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>GPIO 46</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 04</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>GPIO 45</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 05</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>GND</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gnd">Tierra</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 20</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>3V3</strong>[cite: 1]</td>
+                            <td><span class="badge pin-pwr">Salida 3.3V</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 32</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>C6_U0RXD</strong>[cite: 1]</td>
+                            <td><span class="badge pin-c6">UART0 RX Copro C6</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>GPIO 33</strong>[cite: 1]</td>
+                            <td><span class="badge pin-gpio">GPIO / PWM</span>[cite: 1]</td>
+                            <td><strong>C6_U0TXD</strong>[cite: 1]</td>
+                            <td><span class="badge pin-c6">UART0 TX Copro C6</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>ES I2C_SDA</strong>[cite: 1]</td>
+                            <td><span class="badge pin-comm">I2C SDA (Sensores/OLED)</span>[cite: 1]</td>
+                            <td><strong>C6_IO9</strong>[cite: 1]</td>
+                            <td><span class="badge pin-c6">Boot Copro C6</span>[cite: 1]</td>
+                          </tr>
+                          <tr>
+                            <td><strong>ES I2C_SCL</strong>[cite: 1]</td>
+                            <td><span class="badge pin-comm">I2C SCL (Reloj)</span>[cite: 1]</td>
+                            <td><strong>C6_CHIP_PU</strong>[cite: 1]</td>
+                            <td><span class="badge pin-c6">Power-Up Copro C6</span>[cite: 1]</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub-Pestaña 2: Desglose SDIO -->
+            <div class="tab-pane fade" id="p4-tab-sdio">
+              <div class="card bg-dark border-secondary p-4">
+                <h5 class="text-info mb-3">Comunicación Inter-Chip: ESP-Hosted sobre SDIO (4 bits)</h5>
+                <p class="text-secondary">El ESP32-P4 no tiene radio interna. Envía y recibe órdenes RPC y transfiere tramas TCP/IP completas a través del bus SDIO hacia el coprocesador inalámbrico ESP32-C6:</p>
+                <div class="table-responsive">
+                  <table class="table table-dark table-bordered pin-table">
+                    <thead class="table-secondary text-dark">
+                      <tr><th>Línea</th><th>GPIO P4</th><th>Función</th><th>Detalle</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td><span class="badge bg-danger">RESET</span></td><td>GPIO 54</td><td>Reinicio C6</td><td>Control de inicialización del coprocesador desde el P4.</td></tr>
+                      <tr><td><span class="badge bg-primary">CLK</span></td><td>GPIO 18</td><td>Reloj SDIO (40 MHz)</td><td>Sincronización de paquetes de alta velocidad.</td></tr>
+                      <tr><td><span class="badge bg-primary">CMD</span></td><td>GPIO 19</td><td>Comandos RPC</td><td>Configuración Wi-Fi (SSID, contraseña, modo STA/AP).</td></tr>
+                      <tr><td><span class="badge bg-info text-dark">D0 - D3</span></td><td>GPIO 14, 15, 16, 17</td><td>Datos (4 bits)</td><td>Streaming de tramas de red y TLS directo.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub-Pestaña 3: Mapeo Físico 1 a 22 -->
+            <div class="tab-pane fade" id="p4-tab-map">
+              <div class="card bg-dark border-secondary p-4">
+                <h5 class="text-info mb-3">Índice Completo de Componentes Físicos en PCB (1 a 22)</h5>
+                <div class="row small">
+                  <div class="col-md-6">
+                    <ul class="list-group list-group-flush bg-transparent">
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>1.</strong> Botón BOOT (Entrada a modo descarga)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>2.</strong> Botón RESET (Reinicio de SoC)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>3.</strong> Micrófono analógico integrado</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>4.</strong> Speaker Interface (Altavoz amplificado 8Ω 2W)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>5.</strong> TF Card Socket (Ranura MicroSD SDIO 3.0)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>6.</strong> Conector de Batería Li-Ion</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>7.</strong> Switch selector de Batería Li-Ion</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>8.</strong> USB Type-C High-Speed Host (480 Mbps)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>9.</strong> USB Type-C Full-Speed OTG (12 Mbps)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>10.</strong> USB Type-C to UART (Programación y Consola)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>11.</strong> Conector MX1.25 4P Auxiliar</li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <ul class="list-group list-group-flush bg-transparent">
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>12.</strong> Ethernet RJ45 100Mbps (PHY IP101)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>13.</strong> Conector MIPI CSI (Cámara 2-lane con ISP)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>14.</strong> Conector MIPI DSI (Pantalla táctil 2-lane)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>15.</strong> Conector MX1.25 4P UART1</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>16.</strong> Conector MX1.25 4P RS-485 (Industrial)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>17.</strong> Terminal I2C High-Speed (Paso 1.0)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>18.</strong> Conector FPC 6P (Touch Screen)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>19.</strong> Conector MX1.25 2P (Backlight)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>20.</strong> Header GPIO 2.54mm (2*13P)</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>21.</strong> Módulo JC-ESP32P4-M3 Blindado</li>
+                      <li class="list-group-item bg-transparent text-light border-secondary"><strong>22.</strong> Antena Cerámica RF 2.4 GHz</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL 1: SELECTOR DE PLATAFORMAS -->
+  <div class="modal fade" id="modalSelectorPlataformas" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-card border-secondary text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-cyan"><i class="bi bi-folder2-open me-2"></i>Selecciona la Plataforma de Actividades</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-3">
+          <p class="small text-mid-gray mb-3">Elige la placa para desplegar su catálogo completo de prácticas:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-info text-cyan border-secondary p-3 text-start d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalActividadesESP32">
+              <div>
+                <strong class="d-block text-white">ESP32 + Breakout Shield (30 Pines)</strong>
+                <small class="text-mid-gray">Banco de 30 Prácticas (ESP01 a ESP30)</small>
+              </div>
+              <i class="bi bi-arrow-right-circle text-cyan fs-4"></i>
+            </button>
+            <button class="btn btn-outline-secondary p-3 text-start d-flex justify-content-between align-items-center opacity-50" disabled>
+              <div>
+                <strong class="d-block text-white">Arduino UNO R3</strong>
+                <small class="text-mid-gray">Actividades UNO01 a UNO30 (Próximamente)</small>
+              </div>
+              <span class="badge bg-secondary">Próximamente</span>
+            </button>
+            <button class="btn btn-outline-secondary p-3 text-start d-flex justify-content-between align-items-center opacity-50" disabled>
+              <div>
+                <strong class="d-block text-white">Arduino MEGA 2560 R3</strong>
+                <small class="text-mid-gray">Actividades MEGA01 a MEGA30 (Próximamente)</small>
+              </div>
+              <span class="badge bg-secondary">Próximamente</span>
+            </button>
+            <button class="btn btn-outline-secondary p-3 text-start d-flex justify-content-between align-items-center opacity-50" disabled>
+              <div>
+                <strong class="d-block text-white">Freenove ESP32-S3 WROOM</strong>
+                <small class="text-mid-gray">Actividades S301 a S330 (Próximamente)</small>
+              </div>
+              <span class="badge bg-secondary">Próximamente</span>
+            </button>
+            <button class="btn btn-outline-secondary p-3 text-start d-flex justify-content-between align-items-center opacity-50" disabled>
+              <div>
+                <strong class="d-block text-white">Guition ESP32-P4-M3-DEV</strong>
+                <small class="text-mid-gray">Actividades P401 a P430 (Próximamente)</small>
+              </div>
+              <span class="badge bg-secondary">Próximamente</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: CATÁLOGO DE 30 ACTIVIDADES ESP32 (ESP01 A ESP30) CONECTADO A GOOGLE SHEETS -->
+  <div class="modal fade" id="modalActividadesESP32" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content bg-card border-secondary text-light">
+        <div class="modal-header border-secondary">
+          <div>
+            <h5 class="modal-title text-cyan mb-0"><i class="bi bi-motherboard me-2"></i>ESP32 + Shield: Banco de 30 Actividades</h5>
+            <small class="text-mid-gray">Sincronizado en tiempo real con Google Sheets</small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-3">
+          
+          <!-- Pestañas de Navegación por Bloques de 10 -->
+          <ul class="nav nav-tabs border-secondary mb-3" id="tabBloquesActividades">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#bloque1">ESP01 a ESP10</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bloque2">ESP11 a ESP20</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bloque3">ESP21 a ESP30</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- BLOQUE 1: ESP01 A ESP10 -->
+            <div class="tab-pane fade show active" id="bloque1">
+              <div class="row g-2" id="gridBloque1"></div>
+            </div>
+
+            <!-- BLOQUE 2: ESP11 A ESP20 -->
+            <div class="tab-pane fade" id="bloque2">
+              <div class="row g-2" id="gridBloque2"></div>
+            </div>
+
+            <!-- BLOQUE 3: ESP21 A ESP30 -->
+            <div class="tab-pane fade" id="bloque3">
+              <div class="row g-2" id="gridBloque3"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLES HARDWARE -->
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-card border-secondary text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-cyan" id="modalTitle">Especificación Técnica</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-mid-gray" id="modalBody"></div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-outline-light text-cyan" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // URL DE GOOGLE APPS SCRIPT
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPb1TeFlITFlEtuJLQVNHYEwGS12mh8oo5VLDY_78mzCwgu1MiI-Qblp_1Sdpg8Oc3/exec";
+
+    // 30 Prácticas Base (Rutas directas al mismo directorio)
+    const defaultActivities = [
+      { id: "ESP3201", title: "Gráfico de Puntos", desc: "Processing IDE (Simulación y Mapeo)", file: "ESP3201.html", enabled: true },
+      { id: "ESP3202", title: "Gráfico de Líneas Continuas", desc: "Processing IDE (Memoria anterior)", file: "ESP3202.html", enabled: true },
+      { id: "ESP3203", title: "Lectura de Potenciómetros", desc: "ESP32 + Shield GVS (Entradas ADC)", file: "ESP3203.html", enabled: true },
+      { id: "ESP3204", title: "Osciloscopio Serial con Potenciómetro", desc: "Processing & ESP32 (Telemetría UART)", file: "ESP3204.html", enabled: true },
+      { id: "ESP05", title: "Control de LED RGB WS2812", desc: "Modulación RMT y Efectos de Color", file: "ESP05.html", enabled: false },
+      { id: "ESP06", title: "Puente H L293D (Motor DC)", desc: "PWM por Hardware (LEDC) & Sentido de Giro", file: "ESP06.html", enabled: false },
+      { id: "ESP07", title: "Servomotores con Joystick", desc: "Control Angular SG90 en Tríadas GVS", file: "ESP07.html", enabled: false },
+      { id: "ESP08", title: "Sensor I2C MPU-6050", desc: "Lectura de Acelerómetro y Giroscopio", file: "ESP08.html", enabled: false },
+      { id: "ESP09", title: "Display OLED I2C SSD1306", desc: "Gráficos y Texto en 128x64 píxeles", file: "ESP09.html", enabled: false },
+      { id: "ESP10", title: "Sensor Ultrasónico HC-SR04", desc: "Medición de Distancia e Interrupciones", file: "ESP10.html", enabled: false },
+      { id: "ESP11", title: "Sensor de Temperatura DHT11/22", desc: "Protocolo digital a 1 hilo", file: "ESP11.html", enabled: false },
+      { id: "ESP12", title: "Sensor de Luz LDR & Umbral", desc: "Calibración automática analógica", file: "ESP12.html", enabled: false },
+      { id: "ESP13", title: "Teclado Matricial 4x4", desc: "Escaneo de filas y columnas", file: "ESP13.html", enabled: false },
+      { id: "ESP14", title: "Sensor PIR de Movimiento", desc: "Detección de presencia con alarma", file: "ESP14.html", enabled: false },
+      { id: "ESP15", title: "Módulo de Relé Optoacoplado", desc: "Control de cargas de alta potencia", file: "ESP15.html", enabled: false },
+      { id: "ESP16", title: "Sensor de Sonido / Micrófono", desc: "Interruptor por aplausos (Clap Switch)", file: "ESP16.html", enabled: false },
+      { id: "ESP17", title: "Encoder Rotativo con Interrupciones", desc: "Menú navegable por encoder", file: "ESP17.html", enabled: false },
+      { id: "ESP18", title: "Lector RFID-RC522 (SPI)", desc: "Control de acceso por tarjetas", file: "ESP18.html", enabled: false },
+      { id: "ESP19", title: "Reloj RTC DS3231 (I2C)", desc: "Hora real con respaldo de batería", file: "ESP19.html", enabled: false },
+      { id: "ESP20", title: "Tarjeta MicroSD (SPI)", desc: "Datalogger de sensores en CSV", file: "ESP20.html", enabled: false },
+      { id: "ESP21", title: "Wi-Fi Scanner & Conexión STA", desc: "Conexión a red local 2.4 GHz", file: "ESP21.html", enabled: false },
+      { id: "ESP22", title: "Web Server HTML Local", desc: "Control de LEDs desde el navegador", file: "ESP22.html", enabled: false },
+      { id: "ESP23", title: "Web Server AJAX / Fetch en Vivo", desc: "Gráfica web en tiempo real sin recargar", file: "ESP23.html", enabled: false },
+      { id: "ESP24", title: "Protocolo MQTT & Node-RED", desc: "Publicación/Suscripción a Broker local", file: "ESP24.html", enabled: false },
+      { id: "ESP25", title: "ESP-NOW Comunicación P2P", desc: "Envío de datos entre tarjetas sin router", file: "ESP25.html", enabled: false },
+      { id: "ESP26", title: "Bluetooth Serial SPP Clásico", desc: "Control por App móvil Android", file: "ESP26.html", enabled: false },
+      { id: "ESP27", title: "Bluetooth Low Energy (BLE)", desc: "Servicios y Características GATT", file: "ESP27.html", enabled: false },
+      { id: "ESP28", title: "Cliente HTTP GET/POST", desc: "Envío de lecturas a base de datos MySQL", file: "ESP28.html", enabled: false },
+      { id: "ESP29", title: "Actualización OTA (Over-The-Air)", desc: "Carga de firmware inalámbrico por Wi-Fi", file: "ESP29.html", enabled: false },
+      { id: "ESP30", title: "Proyecto Final Sistema IoT", desc: "Dashboard integral con telemetría", file: "ESP30.html", enabled: false }
+    ];
+
+    function renderizarCatalogo(actividades) {
+      let htmlB1 = '', htmlB2 = '', htmlB3 = '';
+      
+      actividades.forEach((act, index) => {
+        const itemHtml = `
+          <div class="col-md-6">
+            <a href="${act.file || '#'}" class="activity-card-link ${act.enabled ? '' : 'disabled'}">
+              <div>
+                <strong class="${act.enabled ? 'text-cyan' : 'text-white'} d-block">${act.id}: ${act.title}</strong>
+                <small class="text-mid-gray">${act.desc}</small>
+              </div>
+              ${act.enabled ? '<i class="bi bi-chevron-right text-cyan"></i>' : '<span class="badge bg-secondary">Próximamente</span>'}
+            </a>
+          </div>
+        `;
+
+        if (index < 10) htmlB1 += itemHtml;
+        else if (index < 20) htmlB2 += itemHtml;
+        else if (index < 30) htmlB3 += itemHtml;
+      });
+
+      document.getElementById('gridBloque1').innerHTML = htmlB1;
+      document.getElementById('gridBloque2').innerHTML = htmlB2;
+      document.getElementById('gridBloque3').innerHTML = htmlB3;
+    }
+
+    // Render inicial con la lista base
+    renderizarCatalogo(defaultActivities);
+
+    // Consulta en segundo plano manteniendo las rutas y estados de activación
+    fetch(SCRIPT_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mergedActivities = defaultActivities.map((defAct, idx) => {
+            const sheetAct = data[idx] || {};
+            return {
+              ...defAct,
+              title: sheetAct.title || defAct.title,
+              desc: sheetAct.desc || defAct.desc,
+              file: defAct.file, // Conserva la ruta correcta
+              enabled: defAct.enabled // Mantiene habilitadas las prácticas existentes
+            };
+          });
+          renderizarCatalogo(mergedActivities);
+        }
+      })
+      .catch(err => console.log("Usando listado local:", err));
+
+    function switchBoard(boardId) {
+      document.getElementById('view-home').style.display = (boardId === 'home') ? 'block' : 'none';
+      document.getElementById('view-uno').style.display = (boardId === 'uno') ? 'block' : 'none';
+      document.getElementById('view-mega').style.display = (boardId === 'mega') ? 'block' : 'none';
+      document.getElementById('view-shield').style.display = (boardId === 'shield') ? 'block' : 'none';
+      document.getElementById('view-s3').style.display = (boardId === 's3') ? 'block' : 'none';
+      document.getElementById('view-p4').style.display = (boardId === 'p4') ? 'block' : 'none';
+
+      document.querySelectorAll('.board-nav-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + boardId);
+      if (activeBtn) activeBtn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    const details = {
+      uno_mcu: { title: "Microcontrolador ATmega328P", body: "Microcontrolador AVR de 8 bits a 16 MHz de arquitectura RISC monociclo[cite: 1]." },
+      uno_mem: { title: "Memoria ATmega328P", body: "32KB Flash, 2KB SRAM interna y 1KB EEPROM[cite: 1]." },
+      uno_gpio: { title: "Pines I/O", body: "14 pines digitales a 5V (6 salidas PWM de 8 bits)[cite: 1]." },
+      uno_adc: { title: "Canales ADC", body: "6 canales analógicos multiplexados (A0 a A5) de 10 bits[cite: 1]." },
+      mega_mcu: { title: "Microcontrolador ATmega2560", body: "Microcontrolador de 8 bits en encapsulado TQFP-100 a 16 MHz[cite: 1]." },
+      mega_mem: { title: "Memoria ATmega2560", body: "256KB Flash, 8KB SRAM y 4KB EEPROM[cite: 1]." },
+      mega_gpio: { title: "54 Pines GPIO", body: "54 pines digitales (15 canales PWM) con tolerancia de 5V nativo[cite: 1]." },
+      mega_uart: { title: "4 Puertos UART", body: "Puertos Serial 0, 1, 2 y 3 por hardware[cite: 1]." },
+      tensilica: { title: "Tensilica Xtensa Dual LX6", body: "Procesador de 32 bits a 240 MHz con 520KB SRAM[cite: 1]." },
+      gvs: { title: "Tríadas GVS", body: "Filas de Ground, Voltage y Signal para conexión directa de sensores[cite: 1]." },
+      jumper: { title: "Jumper 3.3V / 5V", body: "Conmuta el riel 'V' entre 3.3V y 5V DC[cite: 1]." },
+      ch9102x: { title: "CH9102X USB-UART", body: "Puente USB-Serie de bajo consumo a 921600 baudios[cite: 1]." },
+      s3_mcu: { title: "Xtensa Dual LX7", body: "240 MHz con extensiones vectoriales para TinyML y DSP." },
+      s3_cam: { title: "Cámara DVP", body: "Conector FPC de 24 pines compatible con sensores OV2640 / OV5640." },
+      s3_ws2812: { title: "LED WS2812", body: "LED RGB direccionable integrado en placa sobre el GPIO 48." },
+      s3_usb: { title: "Dual USB OTG", body: "Puerto USB CDC / JTAG / HID nativo en GPIO 19 y 20." },
+      mcu: { title: "ESP32-P4 RISC-V", body: "Dual RISC-V @ 360 MHz con aceleración matricial e ISP[cite: 1]." },
+      c6: { title: "Coprocesador ESP32-C6", body: "Wi-Fi 6 (802.11ax) y BLE 5 conectado mediante bus SDIO[cite: 1]." },
+      network: { title: "Ethernet 100M", body: "Transceptor IP101 PHY integrado con conector RJ45[cite: 1]." },
+      memory: { title: "32MB PSRAM", body: "Memoria in-package para renderizado gráfico y video[cite: 1]." }
+    };
+
+    function showDetail(key) {
+      const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+      document.getElementById('modalTitle').innerText = details[key].title;
+      document.getElementById('modalBody').innerHTML = `<p class="mb-0 text-mid-gray">${details[key].body}</p>`;
+      modal.show();
+    }
+  </script>
+</body>
+</html>
