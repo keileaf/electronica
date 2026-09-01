@@ -2035,20 +2035,20 @@
     // URL DE GOOGLE APPS SCRIPT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPb1TeFlITFlEtuJLQVNHYEwGS12mh8oo5VLDY_78mzCwgu1MiI-Qblp_1Sdpg8Oc3/exec";
 
-    // 30 Prácticas Base (Rutas directas al mismo directorio)
+    // 30 Prácticas Base (Rutas directas al mismo directorio con ESP3205 y ESP3206 activas)
     const defaultActivities = [
       { id: "ESP3201", title: "Gráfico de Puntos", desc: "Processing IDE (Simulación y Mapeo)", file: "ESP3201.html", enabled: true },
       { id: "ESP3202", title: "Gráfico de Líneas Continuas", desc: "Processing IDE (Memoria anterior)", file: "ESP3202.html", enabled: true },
       { id: "ESP3203", title: "Lectura de Potenciómetros", desc: "ESP32 + Shield GVS (Entradas ADC)", file: "ESP3203.html", enabled: true },
       { id: "ESP3204", title: "Osciloscopio Serial con Potenciómetro", desc: "Processing & ESP32 (Telemetría UART)", file: "ESP3204.html", enabled: true },
-      { id: "ESP05", title: "Control de LED RGB WS2812", desc: "Modulación RMT y Efectos de Color", file: "ESP05.html", enabled: false },
-      { id: "ESP06", title: "Puente H L293D (Motor DC)", desc: "PWM por Hardware (LEDC) & Sentido de Giro", file: "ESP06.html", enabled: false },
+      { id: "ESP3205", title: "Sensor DHT11 (Temp / Hum)", desc: "Protocolo Digital y Dashboard Ambiental", file: "ESP3205.html", enabled: true },
+      { id: "ESP3206", title: "Sensor de Luz LDR (Fotorresistencia)", desc: "Divisor de Tensión con Resistencia de 10 kΩ", file: "ESP3206.html", enabled: true },
       { id: "ESP07", title: "Servomotores con Joystick", desc: "Control Angular SG90 en Tríadas GVS", file: "ESP07.html", enabled: false },
       { id: "ESP08", title: "Sensor I2C MPU-6050", desc: "Lectura de Acelerómetro y Giroscopio", file: "ESP08.html", enabled: false },
       { id: "ESP09", title: "Display OLED I2C SSD1306", desc: "Gráficos y Texto en 128x64 píxeles", file: "ESP09.html", enabled: false },
       { id: "ESP10", title: "Sensor Ultrasónico HC-SR04", desc: "Medición de Distancia e Interrupciones", file: "ESP10.html", enabled: false },
-      { id: "ESP11", title: "Sensor de Temperatura DHT11/22", desc: "Protocolo digital a 1 hilo", file: "ESP11.html", enabled: false },
-      { id: "ESP12", title: "Sensor de Luz LDR & Umbral", desc: "Calibración automática analógica", file: "ESP12.html", enabled: false },
+      { id: "ESP11", title: "Control de LED RGB WS2812", desc: "Modulación RMT y Efectos de Color", file: "ESP11.html", enabled: false },
+      { id: "ESP12", title: "Puente H L293D (Motor DC)", desc: "PWM por Hardware (LEDC) & Sentido de Giro", file: "ESP12.html", enabled: false },
       { id: "ESP13", title: "Teclado Matricial 4x4", desc: "Escaneo de filas y columnas", file: "ESP13.html", enabled: false },
       { id: "ESP14", title: "Sensor PIR de Movimiento", desc: "Detección de presencia con alarma", file: "ESP14.html", enabled: false },
       { id: "ESP15", title: "Módulo de Relé Optoacoplado", desc: "Control de cargas de alta potencia", file: "ESP15.html", enabled: false },
