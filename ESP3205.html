@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP3205: Sensor de Temperatura y Humedad DHT11 | ESP32 + Shield GVS</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --c-dark-gray: #7a7f87;
+      --c-mid-gray: #9aa0a8;
+      --c-blue-accent: #5aa9e6;
+      --c-blue-soft: #8ec8f2;
+      --c-cyan-light: #9fdfef;
+      --c-white: #f2f3f5;
+
+      --bg-main: #17181b;
+      --bg-sidebar: #17181b;
+      --bg-card: #1c1e22;
+      --bg-card-inner: #1c1e22;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-main);
+      color: #e4e6e9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      min-height: 100vh;
+      letter-spacing: 0.1px;
+    }
+    main { max-width: 1180px; }
+    .sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+    @media (min-width: 992px) {
+      .sidebar { min-height: 100vh; position: sticky; top: 0; }
+    }
+    .activity-btn {
+      text-align: left;
+      border-radius: 6px;
+      padding: 9px 12px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      color: var(--c-mid-gray);
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 2px solid transparent;
+      width: 100%;
+      text-decoration: none;
+      display: block;
+    }
+    .activity-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--c-white);
+    }
+    .activity-btn.active {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--c-white);
+      border-left: 2px solid var(--c-blue-accent);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .code-box {
+      background-color: #131417;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--c-cyan-light);
+      position: relative;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+    .badge-board {
+      background-color: transparent;
+      color: var(--c-mid-gray);
+      border: none;
+      padding-left: 0;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .nav-pills .nav-link {
+      color: var(--c-mid-gray);
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-right: 14px;
+      margin-bottom: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      background-color: transparent;
+    }
+    .nav-pills .nav-link:hover {
+      color: var(--c-white);
+      border-bottom-color: var(--border-light);
+    }
+    .nav-pills .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      font-weight: 600;
+      border-bottom-color: var(--c-cyan-light);
+    }
+    .nav-tabs .nav-link {
+      color: var(--c-mid-gray);
+      border: 1px solid transparent;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      border-color: transparent transparent var(--c-cyan-light) transparent;
+      font-weight: 600;
+    }
+    .pin-adc, .pin-pwr, .pin-gnd, .pin-warn, .pin-comm, .pin-gpio {
+      background-color: transparent;
+      border: none;
+      padding: 2px 0;
+      font-weight: 600;
+    }
+    .pin-adc { color: var(--c-blue-soft); }
+    .pin-pwr { color: var(--c-dark-gray); }
+    .pin-gnd { color: #b6bcc4; }
+    .pin-warn { color: var(--c-cyan-light); }
+    .pin-comm { color: var(--c-blue-accent); }
+    .pin-gpio { color: var(--c-white); }
+
+    .svg-container {
+      max-width: 100%;
+      height: auto;
+    }
+    .text-cyan { color: var(--c-cyan-light) !important; }
+    .text-blue-light { color: var(--c-blue-soft) !important; }
+    .text-mid-gray { color: #a7acb4 !important; }
+
+    .step-card {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--c-blue-accent);
+      color: var(--c-white);
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+
+    .card { box-shadow: none !important; }
+    .row.g-3 { --bs-gutter-x: 1rem; --bs-gutter-y: 1rem; }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- ================= SIDEBAR ================= -->
+      <nav class="col-lg-3 col-xl-2 d-block sidebar py-3 px-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+          <span class="fs-5 fw-bold text-white"><i class="bi bi-journal-code text-cyan me-2"></i>ESP32 Lab</span>
+          <a href="index.html" class="btn btn-sm btn-outline-light text-cyan border-secondary" title="Volver al Hub">
+            <i class="bi bi-arrow-left"></i> Hub
+          </a>
+        </div>
+
+        <small class="text-uppercase text-mid-gray fw-bold px-1 mb-2 d-block" style="font-size: 0.72rem; letter-spacing: 1px;">
+          Actividades ESP32
+        </small>
+
+        <div class="nav flex-column mb-3">
+          <a href="ESP3201.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3201</div>
+            <div style="font-size: 0.75rem;">Gráfico de Puntos (Processing)</div>
+          </a>
+          <a href="ESP3202.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3202</div>
+            <div style="font-size: 0.75rem;">Gráfico de Líneas Continuas</div>
+          </a>
+          <a href="ESP3203.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3203</div>
+            <div style="font-size: 0.75rem;">Lectura de Potenciómetros (ADC)</div>
+          </a>
+          <a href="ESP3204.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3204</div>
+            <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
+          </a>
+          <a href="ESP3205.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- ================= CONTENIDO DE LA ACTIVIDAD ================= -->
+      <main class="col-lg-9 col-xl-10 px-3 px-md-4 py-3">
+        
+        <!-- Encabezado -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+          <div>
+            <span class="badge badge-board mb-1">Sensores Digitales / Flujo Arduino a Processing</span>
+            <h2 class="h3 fw-bold text-white mb-0">ESP3205: Sensor de Temperatura y Humedad DHT11</h2>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <span class="badge badge-board px-3 py-2 fs-6">
+              <i class="bi bi-thermometer-half me-1 text-cyan"></i> ESP32 &rarr; Processing
+            </span>
+          </div>
+        </div>
+
+        <!-- TARJETA DEL COMPONENTE Y EXPLICACIÓN DIDÁCTICA -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="row align-items-center g-3">
+            <div class="col-md-3 col-lg-2 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100" height="100" style="background:transparent;">
+                <!-- PCB Base -->
+                <rect x="25" y="15" width="70" height="90" rx="6" fill="#18191b" stroke="#44474f" stroke-width="1.5"/>
+                <!-- Carcasa Azul DHT11 con rejilla -->
+                <rect x="30" y="20" width="60" height="52" rx="4" fill="#1d4ed8" stroke="#3b82f6" stroke-width="1.2"/>
+                <line x1="38" y1="28" x2="82" y2="28" stroke="#60a5fa" stroke-width="2"/>
+                <line x1="38" y1="36" x2="82" y2="36" stroke="#60a5fa" stroke-width="2"/>
+                <line x1="38" y1="44" x2="82" y2="44" stroke="#60a5fa" stroke-width="2"/>
+                <line x1="38" y1="52" x2="82" y2="52" stroke="#60a5fa" stroke-width="2"/>
+                <line x1="38" y1="60" x2="82" y2="60" stroke="#60a5fa" stroke-width="2"/>
+                <!-- Pines GVS -->
+                <rect x="42" y="80" width="5" height="25" rx="1.5" fill="#cbd5e1" stroke="#8c8c8c"/>
+                <rect x="58" y="80" width="5" height="25" rx="1.5" fill="#97e9ff" stroke="#2196f3"/>
+                <rect x="74" y="80" width="5" height="25" rx="1.5" fill="#cbd5e1" stroke="#8c8c8c"/>
+                <circle cx="44.5" cy="100" r="1.5" fill="#18191b"/>
+                <circle cx="60.5" cy="100" r="1.5" fill="#18191b"/>
+                <circle cx="76.5" cy="100" r="1.5" fill="#18191b"/>
+              </svg>
+            </div>
+            <div class="col-md-9 col-lg-10">
+              <h5 class="text-white mb-1">¿Qué es el sensor DHT11 y cómo funciona?</h5>
+              <p class="small text-mid-gray mb-2">
+                En las prácticas anteriores usamos un <strong>potenciómetro</strong>: una perilla que girábamos manualmente para variar el voltaje analógico medido por el ESP32.
+              </p>
+              <p class="small text-mid-gray mb-2">
+                El <strong>DHT11</strong> es un sensor ambiental automático. Dentro de su carcasa azul tiene componentes que <strong>varían su paso de corriente eléctrica por sí solos</strong> según la temperatura y la cantidad de vapor de agua (humedad) en el aire. Un microcircuito integrado dentro del sensor procesa los datos y los envía empaquetados en formato digital al ESP32 a través de un solo cable (pin <strong>Data/Señal</strong>).
+              </p>
+              <div class="d-flex flex-wrap gap-2 small">
+                <span class="badge pin-pwr">Alimentación: 3.3V (Riel V)</span>
+                <span class="badge pin-adc">Pin de Datos: Señal S (GPIO 4 digital)</span>
+                <span class="badge pin-gnd">Tierra: GND (0V Riel G)</span>
+                <span class="badge badge-board">Rango Medible: 0 a 50 °C | 20% a 90% RH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GUÍA DE INSTALACIÓN DE LIBRERÍA -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-box-seam-fill text-cyan fs-4 me-2"></i>
+            <h5 class="text-white mb-0">Instalación de la Librería en Arduino IDE</h5>
+          </div>
+          <p class="small text-mid-gray mb-2">
+            Para poder utilizar las funciones del sensor en Arduino, debemos agregar la librería oficial antes de cargar el código:
+          </p>
+          <div class="row g-2 small">
+            <div class="col-md-3">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-1-circle me-1"></i> Abrir Gestor</strong>
+                <span class="text-mid-gray">En Arduino IDE, ve a <strong>Herramientas &rarr; Administrar Bibliotecas...</strong> (o presiona <code>Ctrl + Shift + I</code>).</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-2-circle me-1"></i> Buscar Librería</strong>
+                <span class="text-mid-gray">En el buscador escribe exactamente: <code class="text-white">DHT sensor library</code>.</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-3-circle me-1"></i> Seleccionar Autor</strong>
+                <span class="text-mid-gray">Localiza la librería creada por el autor <strong>Adafruit</strong> y haz clic en <strong>Instalar</strong>.</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-4-circle me-1"></i> Dependencias</strong>
+                <span class="text-mid-gray">Si se abre un mensaje pidiendo instalar dependencias complementarias, selecciona <strong>"Install All"</strong>.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TARJETA DE APLICACIÓN EN LA VIDA REAL -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-buildings-fill text-cyan fs-4 me-2"></i>
+            <h5 class="text-white mb-0">Aplicación en la Vida Real: Invernaderos Inteligentes y Monitoreo Ambiental</h5>
+          </div>
+          <p class="small text-mid-gray mb-2">
+            En un <strong>invernadero automatizado</strong> o en una <strong>sala de cómputo</strong>, el ESP32 envía continuamente los datos hacia una pantalla para supervisar las condiciones del recinto:
+          </p>
+          <div class="row g-2 small">
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-danger d-block mb-1"><i class="bi bi-fan me-1"></i> Control de Ventilación</strong>
+                <span class="text-mid-gray">Si la temperatura rebasa los <strong>30 °C</strong>, el sistema emite una alerta para encender ventiladores y evitar daños térmicos.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-info d-block mb-1"><i class="bi bi-cloud-drizzle-fill me-1"></i> Control de Riego</strong>
+                <span class="text-mid-gray">Si la humedad baja de <strong>40%</strong>, se envía una señal para activar aspersores y humedecer el ambiente de las plantas.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-display me-1"></i> Gráfica en Processing</strong>
+                <span class="text-mid-gray">Processing recibe los datos en tiempo real dentro de su ciclo <code>draw()</code> y traza las líneas continuas de monitoreo.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestañas Parte A y B -->
+        <ul class="nav nav-pills mb-3" id="partTabs">
+          <li class="nav-item">
+            <button class="nav-link active" id="tabPartA" onclick="setPart('A')">Parte A: 1 Señal (Temperatura)</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tabPartB" onclick="setPart('B')">Parte B: 2 Señales Simultáneas (Temperatura y Humedad)</button>
+          </li>
+        </ul>
+
+        <!-- Ficha Técnica -->
+        <div class="row g-3 mb-4">
+          <!-- Diagrama de Conexión SVG -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-white mb-0" id="diagramTitle"><i class="bi bi-diagram-3-fill text-cyan me-2"></i>Conexión del DHT11 en Shield GVS</h6>
+                <span class="badge bg-secondary text-white">Lógica: 3.3V Digital</span>
+              </div>
+              <div class="text-center py-2" id="svgContainer"></div>
+            </div>
+          </div>
+
+          <!-- Tabla de Mapeo de Terminales -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <h6 class="text-white mb-2"><i class="bi bi-table text-cyan me-2"></i>Mapeo de Terminales Físicas</h6>
+              <div class="table-responsive">
+                <table class="table table-dark table-bordered small align-middle mb-0">
+                  <thead class="table-secondary text-dark">
+                    <tr>
+                      <th>Módulo</th>
+                      <th>Pin Módulo</th>
+                      <th>Fila Shield GVS</th>
+                      <th>Función Eléctrica</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pinTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="p-2 rounded bg-card border border-secondary mt-3">
+                <small class="text-cyan d-block fw-bold"><i class="bi bi-clock-history me-1"></i> Pausa Necesaria en Arduino:</small>
+                <small class="text-mid-gray">
+                  El DHT11 necesita una pausa constante entre lecturas para actualizar sus componentes internos de forma estable.
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SIMULADOR DIDÁCTICO DEL FLUJO ================= -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+            <div>
+              <h5 class="text-white mb-0"><i class="bi bi-sliders text-cyan me-2"></i>Simulador Didáctico: Flujo de Información (ESP32 &rarr; Processing)</h5>
+              <small class="text-mid-gray">Mueve los controles para ver cómo viaja el dato serial y cómo Processing lo desempaqueta dentro de <code>draw()</code>.</small>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-md-0">
+              <button class="btn btn-sm btn-outline-info text-cyan" onclick="fijarAmbiente(18, 45)">Clima Fresco (18°C, 45%)</button>
+              <button class="btn btn-sm btn-outline-light" onclick="fijarAmbiente(26, 60)">Confort (26°C, 60%)</button>
+              <button class="btn btn-sm btn-outline-warning" onclick="fijarAmbiente(38, 85)">Cálido / Invernadero (38°C, 85%)</button>
+            </div>
+          </div>
+
+          <!-- 3 Pasos Explicados con Sencillez -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">1</span>
+                  <h6 class="text-white mb-0">1. Transmisión en Arduino</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">El ESP32 transmite las lecturas por USB con formato separado por coma:</p>
+                <span class="badge pin-adc d-block text-center py-2 fs-6" id="simBadgeDHT">Serial.print / Serial.println</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">2</span>
+                  <h6 class="text-white mb-0" id="simStep2Title">2. Separación con split()</h6>
+                </div>
+                <p class="small text-mid-gray mb-1" id="simStep2Desc">Processing lee la línea en <code>draw()</code> y separa los valores individuales:</p>
+                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simStep2Formula">split(trama, ',')</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">3</span>
+                  <h6 class="text-white mb-0">3. Trazo Continuo con line()</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">Se conecta el punto anterior con el nuevo y el contador avanza 10 píxeles:</p>
+                <span class="badge pin-warn d-block text-center py-2 fs-6" id="simBadgeLine">line(contador+50, ant_1, contador+60, Y);</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles de Clima Virtual -->
+          <div class="p-3 rounded bg-main border border-secondary">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="sliderTemp" class="form-label text-white small fw-bold d-flex justify-content-between">
+                  <span><i class="bi bi-thermometer-half text-danger me-1"></i> Temperatura (°C):</span>
+                  <span class="text-danger fw-bold" id="lblSliderTemp">26.0 °C</span>
+                </label>
+                <input type="range" class="form-range" min="0" max="50" value="26" step="0.5" id="sliderTemp" oninput="actualizarSimulador()">
+              </div>
+              <div class="col-md-6">
+                <label for="sliderHum" class="form-label text-white small fw-bold d-flex justify-content-between">
+                  <span><i class="bi bi-droplet-fill text-cyan me-1"></i> Humedad Relativa (%):</span>
+                  <span class="text-cyan fw-bold" id="lblSliderHum">60.0 %</span>
+                </label>
+                <input type="range" class="form-range" min="20" max="90" value="60" step="1" id="sliderHum" oninput="actualizarSimulador()">
+              </div>
+            </div>
+
+            <div class="row g-2 mt-3">
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Trama transmitida por Serial:</small>
+                  <code class="text-cyan fw-bold" id="simTextoSerial">26.0</code>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Coordenada Y calculada en pantalla:</small>
+                  <span class="text-white small fw-bold" id="simCalculoY">Y = 26.0 * 6.0 + 200 = 356.0 px</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= CÓDIGOS FUENTE (ARDUINO IDE & PROCESSING) ================= -->
+        <div class="card bg-dark border-secondary p-3">
+          
+          <ul class="nav nav-tabs border-secondary mb-3" id="codeSourceTabs">
+            <li class="nav-item">
+              <button class="nav-link active" id="btnTabArduino" onclick="switchCodeTab('arduino')">
+                <i class="bi bi-cpu me-1"></i> Código ESP32 (Arduino IDE)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="btnTabProcessing" onclick="switchCodeTab('processing')">
+                <i class="bi bi-display me-1"></i> Código Processing (Java)
+              </button>
+            </li>
+          </ul>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-mid-gray" id="codeDescription">Firmware a cargar en el ESP32 mediante Arduino IDE</span>
+            <button class="btn btn-sm btn-outline-light text-cyan" onclick="copyCode()"><i class="bi bi-clipboard me-1"></i> Copiar Código Activo</button>
+          </div>
+
+          <pre class="code-box mb-0" id="codeBlock"><code>// Cargando código...</code></pre>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentPart = 'A';
+    let currentCodeTab = 'arduino';
+
+    const codes = {
+      A: {
+        codeArduino: 
+`// ==========================================================
+// ACTIVIDAD ESP3205 - PARTE A (ESP32): 1 SEÑAL (TEMPERATURA)
+// Librería necesaria: "DHT sensor library" de Adafruit
+// Conectar el DHT11 a la fila GPIO 4 (Tríada G-V-S)
+// ==========================================================
+
+#include "DHT.h"
+
+#define DHTPIN 4       // Pin digital conectado a la señal S (Fila GPIO 4)
+#define DHTTYPE DHT11  // Tipo de sensor
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200); // Misma velocidad que en Processing
+  dht.begin();
+}
+
+void loop() {
+  // Leemos la temperatura en grados Celsius
+  float temperatura = dht.readTemperature();
+
+  // Si la lectura es válida, la enviamos por Serial
+  if (!isnan(temperatura)) {
+    Serial.println(temperatura);
+  }
+
+  delay(100);
+}`,
+        codeProcessing: 
+`// ==========================================================
+// ACTIVIDAD ESP3205 - PARTE A (PROCESSING): GRÁFICO CONTINUO
+// Estructura lineal usando únicamente setup() y draw()
+// ==========================================================
+
+import processing.serial.*;
+
+Serial miPuerto;
+
+int contador = 0;
+float X1 = 0;
+float anterior_1;
+
+void setup()
+{
+  size(800, 600);
+  background(0, 0, 0);
+
+  // dibujo de cuadricula
+  stroke(255, 255, 0);
+  fill(50);
+  rect(50, 200, 500, 300);
+
+  // Configuración del puerto serial
+  printArray(Serial.list());
+  String nombrePuerto = Serial.list()[0]; // Selecciona el puerto COM de tu ESP32
+  miPuerto = new Serial(this, nombrePuerto, 115200);
+
+  anterior_1 = 350; // Punto inicial dentro del cuadro
+}
+
+void draw()
+{
+  strokeWeight(1);
+
+  // Título
+  textSize(40);
+  fill(0, 255, 0);
+  text("Sistema de monitoreo DHT11", 50, 50);
+
+  // cuadro para los numeros
+  stroke(255, 255, 0);
+  fill(50);
+  rect(450, 10, 300, 70);
+
+  // Leer dato del ESP32 dentro del draw()
+  if (miPuerto.available() > 0) {
+    String mensaje = miPuerto.readStringUntil('\\n');
+    if (mensaje != null) {
+      mensaje = trim(mensaje);
+      X1 = float(mensaje); // Temperatura recibida
+    }
+  }
+
+  // imprimir valor numerico en pantalla
+  textSize(35);
+  fill(255, 255, 0);
+  text("Temp: " + X1 + " C", 460, 55);
+
+  // Condición de barrido: cuando llega a 500 px limpia la pantalla
+  if (contador >= 500)
+  {
+    contador = 0;
+
+    stroke(255, 255, 0);
+    fill(50);
+    rect(50, 200, 500, 300);
+
+    // Escala: 0 a 50 °C adaptados a 300 px (300 / 50 = 6.0)
+    anterior_1 = X1 * 6.0 + 200;
+  }
+
+  // Trazo continuo de Temperatura (Color CYAN)
+  strokeWeight(3);
+  stroke(0, 255, 255);
+  line(contador + 50, anterior_1, contador + 60, X1 * 6.0 + 200);
+
+  // Guardar memoria y avanzar 10 pixeles
+  anterior_1 = X1 * 6.0 + 200;
+  contador = contador + 10;
+
+  delay(100);
+}`,
+        pins: [
+          { comp: "Módulo DHT11", pinComp: "Pin DATA / S (Señal)", boardPin: "Pin S (Fila GPIO 4)", line: "Envío digital de temperatura" },
+          { comp: "Módulo DHT11", pinComp: "Pin VCC / + (Alimentación)", boardPin: "Pin V (Fila GPIO 4)", line: "Alimentación Riel V (3.3V)" },
+          { comp: "Módulo DHT11", pinComp: "Pin GND / - (Tierra)", boardPin: "Pin G (Fila GPIO 4)", line: "Tierra Riel G (0V)" }
+        ]
+      },
+
+      B: {
+        codeArduino: 
+`// ==========================================================
+// ACTIVIDAD ESP3205 - PARTE B (ESP32): 2 SEÑALES (TEMP Y HUM)
+// Librería necesaria: "DHT sensor library" de Adafruit
+// Estructura de envío de 2 valores separados por coma
+// ==========================================================
+
+#include "DHT.h"
+
+#define DHTPIN 4       // Pin conectado a la señal S (Fila GPIO 4)
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+}
+
+void loop() {
+  // Lectura de ambos parámetros ambientales
+  float temp = dht.readTemperature(); // 0 a 50 °C
+  float hum = dht.readHumidity();      // 20 a 90 %
+
+  // Trama separada por coma: "TEMP,HUM\\n"
+  if (!isnan(temp) && !isnan(hum)) {
+    Serial.print(temp);
+    Serial.print(",");
+    Serial.println(hum);
+  }
+
+  delay(100);
+}`,
+        codeProcessing: 
+`// ==========================================================
+// ACTIVIDAD ESP3205 - PARTE B (PROCESSING): 2 SEÑALES CONTINUAS
+// Desempaqueta con split() usando únicamente setup() y draw()
+// ==========================================================
+
+import processing.serial.*;
+
+Serial miPuerto;
+
+int contador = 0;
+float X1 = 0; // Temperatura
+float X2 = 0; // Humedad
+
+float anterior_1;
+float anterior_2;
+
+void setup()
+{
+  size(800, 600);
+  background(0, 0, 0);
+
+  // dibujo de cuadricula
+  stroke(255, 255, 0);
+  fill(50);
+  rect(50, 200, 500, 300);
+
+  // Configuración del puerto serial
+  printArray(Serial.list());
+  String nombrePuerto = Serial.list()[0];
+  miPuerto = new Serial(this, nombrePuerto, 115200);
+
+  // Puntos iniciales dentro del marco
+  anterior_1 = 350;
+  anterior_2 = 250;
+}
+
+void draw()
+{
+  strokeWeight(1);
+
+  // Título
+  textSize(36);
+  fill(0, 255, 0);
+  text("Estación Ambiental DHT11", 50, 50);
+
+  // cuadro para los numeros
+  stroke(255, 255, 0);
+  fill(50);
+  rect(420, 10, 350, 70);
+
+  // Leer trama serial y separar datos dentro de draw()
+  if (miPuerto.available() > 0) {
+    String trama = miPuerto.readStringUntil('\\n');
+    if (trama != null) {
+      trama = trim(trama);
+      String[] valores = split(trama, ',');
+      if (valores.length == 2) {
+        X1 = float(valores[0]); // Temperatura (Valor 1)
+        X2 = float(valores[1]); // Humedad (Valor 2)
+      }
+    }
+  }
+
+  // imprimir ambos valores
+  textSize(24);
+  fill(255, 255, 0);
+  text("T:" + X1 + "C  |  H:" + X2 + "%", 435, 52);
+
+  // Limpieza de pantalla al llegar al borde derecho
+  if (contador >= 500)
+  {
+    contador = 0;
+
+    stroke(255, 255, 0);
+    fill(50);
+    rect(50, 200, 500, 300);
+
+    // Reiniciar puntos base
+    anterior_1 = X1 * 6.0 + 200; // Escala Temp: 0-50 C -> 300 px
+    anterior_2 = X2 * 3.0 + 200; // Escala Hum: 0-100 % -> 300 px
+  }
+
+  strokeWeight(3);
+
+  // Señal 1: Temperatura (Color CYAN)
+  stroke(0, 255, 255);
+  line(contador + 50, anterior_1, contador + 60, X1 * 6.0 + 200);
+
+  // Señal 2: Humedad (Color AMARILLO)
+  stroke(255, 255, 0);
+  line(contador + 50, anterior_2, contador + 60, X2 * 3.0 + 200);
+
+  // Actualizar memorias y avanzar 10 pixeles
+  anterior_1 = X1 * 6.0 + 200;
+  anterior_2 = X2 * 3.0 + 200;
+  contador = contador + 10;
+
+  delay(100);
+}`,
+        pins: [
+          { comp: "Módulo DHT11", pinComp: "Pin DATA / S (Señal)", boardPin: "Pin S (Fila GPIO 4)", line: "Envío serial de Temp y Humedad (CSV)" },
+          { comp: "Módulo DHT11", pinComp: "Pin VCC / + (Alimentación)", boardPin: "Pin V (Fila GPIO 4)", line: "Alimentación Riel V (3.3V)" },
+          { comp: "Módulo DHT11", pinComp: "Pin GND / - (Tierra)", boardPin: "Pin G (Fila GPIO 4)", line: "Tierra Riel G (0V)" }
+        ]
+      }
+    };
+
+    function setPart(part) {
+      currentPart = part;
+      document.getElementById('tabPartA').classList.toggle('active', part === 'A');
+      document.getElementById('tabPartB').classList.toggle('active', part === 'B');
+      render();
+    }
+
+    function switchCodeTab(tab) {
+      currentCodeTab = tab;
+      document.getElementById('btnTabArduino').classList.toggle('active', tab === 'arduino');
+      document.getElementById('btnTabProcessing').classList.toggle('active', tab === 'processing');
+      
+      const act = codes[currentPart];
+      if (tab === 'arduino') {
+        document.getElementById('codeDescription').innerText = "Firmware a cargar en el ESP32 mediante Arduino IDE";
+        document.getElementById('codeBlock').innerText = act.codeArduino;
+      } else {
+        document.getElementById('codeDescription').innerText = "Sketch simple en Processing IDE usando solo setup() y draw()";
+        document.getElementById('codeBlock').innerText = act.codeProcessing;
+      }
+    }
+
+    function render() {
+      const data = codes[currentPart];
+      switchCodeTab(currentCodeTab);
+
+      let rows = '';
+      data.pins.forEach(p => {
+        rows += `<tr>
+          <td class="text-white fw-bold">${p.comp}</td>
+          <td>${p.pinComp}</td>
+          <td><span class="badge pin-adc">${p.boardPin}</span></td>
+          <td>${p.line}</td>
+        </tr>`;
+      });
+      document.getElementById('pinTableBody').innerHTML = rows;
+
+      // Diagrama SVG del DHT11 conectado a la fila GPIO 4
+      document.getElementById('svgContainer').innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 220" class="svg-container" style="background:#121315; border-radius:8px;">
+          <!-- Shield ESP32 -->
+          <rect x="25" y="25" width="150" height="170" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+          <text x="100" y="52" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">ESP32 SHIELD</text>
+          <text x="100" y="68" fill="#6bbef9" font-size="9" text-anchor="middle">FILA GPIO 4</text>
+          
+          <circle cx="160" cy="95" r="4" fill="#6bbef9"/>
+          <text x="150" y="98" fill="#ffffff" font-size="9" text-anchor="end">V (3.3V)</text>
+          <circle cx="160" cy="120" r="4" fill="#97e9ff"/>
+          <text x="150" y="123" fill="#97e9ff" font-size="9" text-anchor="end">S (GPIO 4)</text>
+          <circle cx="160" cy="145" r="4" fill="#8c8c8c"/>
+          <text x="150" y="148" fill="#adb5bd" font-size="9" text-anchor="end">G (GND)</text>
+
+          <!-- Cables de conexión -->
+          <line x1="160" y1="95" x2="295" y2="95" stroke="#6bbef9" stroke-width="2"/>
+          <line x1="160" y1="120" x2="295" y2="120" stroke="#97e9ff" stroke-width="2"/>
+          <line x1="160" y1="145" x2="295" y2="145" stroke="#8c8c8c" stroke-width="2"/>
+
+          <!-- Módulo DHT11 -->
+          <rect x="295" y="45" width="140" height="130" rx="6" fill="#18191b" stroke="#3b82f6" stroke-width="1.5"/>
+          <rect x="345" y="55" width="75" height="60" rx="4" fill="#1d4ed8" stroke="#60a5fa"/>
+          <line x1="355" y1="68" x2="410" y2="68" stroke="#93c5fd" stroke-width="2"/>
+          <line x1="355" y1="80" x2="410" y2="80" stroke="#93c5fd" stroke-width="2"/>
+          <line x1="355" y1="92" x2="410" y2="92" stroke="#93c5fd" stroke-width="2"/>
+          <line x1="355" y1="104" x2="410" y2="104" stroke="#93c5fd" stroke-width="2"/>
+
+          <text x="382" y="130" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">DHT11</text>
+          
+          <circle cx="295" cy="95" r="4" fill="#6bbef9"/><text x="306" y="98" fill="#6bbef9" font-size="8">VCC (+)</text>
+          <circle cx="295" cy="120" r="4" fill="#97e9ff"/><text x="306" y="123" fill="#97e9ff" font-size="8">DATA (S)</text>
+          <circle cx="295" cy="145" r="4" fill="#8c8c8c"/><text x="306" y="148" fill="#adb5bd" font-size="8">GND (-)</text>
+        </svg>
+      `;
+    }
+
+    function actualizarSimulador() {
+      const t = parseFloat(document.getElementById('sliderTemp').value).toFixed(1);
+      const h = parseFloat(document.getElementById('sliderHum').value).toFixed(1);
+
+      document.getElementById('lblSliderTemp').innerText = `${t} °C`;
+      document.getElementById('lblSliderHum').innerText = `${h} %`;
+
+      if (currentPart === 'A') {
+        document.getElementById('simBadgeDHT').innerText = `Serial.println(${t});`;
+        document.getElementById('simStep2Formula').innerText = `X1 = float(mensaje); // ${t}`;
+        document.getElementById('simTextoSerial').innerText = `${t}`;
+        const yCalc = (parseFloat(t) * 6.0 + 200).toFixed(1);
+        document.getElementById('simCalculoY').innerText = `Y = ${t} * 6.0 + 200 = ${yCalc} px`;
+      } else {
+        document.getElementById('simBadgeDHT').innerText = `Serial.print(${t}); Serial.print(","); Serial.println(${h});`;
+        document.getElementById('simStep2Formula').innerText = `X1 = float(valores[0]); X2 = float(valores[1]);`;
+        document.getElementById('simTextoSerial').innerText = `${t},${h}`;
+        const y1Calc = (parseFloat(t) * 6.0 + 200).toFixed(1);
+        const y2Calc = (parseFloat(h) * 3.0 + 200).toFixed(1);
+        document.getElementById('simCalculoY').innerText = `Y1 = ${y1Calc} px (Cyan) | Y2 = ${y2Calc} px (Amarillo)`;
+      }
+    }
+
+    function fijarAmbiente(temp, hum) {
+      document.getElementById('sliderTemp').value = temp;
+      document.getElementById('sliderHum').value = hum;
+      actualizarSimulador();
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeBlock').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Código copiado al portapapeles con éxito');
+      });
+    }
+
+    render();
+    actualizarSimulador();
+  </script>
+</body>
+</html>

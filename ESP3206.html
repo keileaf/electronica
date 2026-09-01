@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP3206: Sensor de Luz LDR (Fotorresistencia) | ESP32 + Shield GVS</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --c-dark-gray: #7a7f87;
+      --c-mid-gray: #9aa0a8;
+      --c-blue-accent: #5aa9e6;
+      --c-blue-soft: #8ec8f2;
+      --c-cyan-light: #9fdfef;
+      --c-white: #f2f3f5;
+
+      --bg-main: #17181b;
+      --bg-sidebar: #17181b;
+      --bg-card: #1c1e22;
+      --bg-card-inner: #1c1e22;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-main);
+      color: #e4e6e9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      min-height: 100vh;
+      letter-spacing: 0.1px;
+    }
+    main { max-width: 1180px; }
+    .sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+    @media (min-width: 992px) {
+      .sidebar { min-height: 100vh; position: sticky; top: 0; }
+    }
+    .activity-btn {
+      text-align: left;
+      border-radius: 6px;
+      padding: 9px 12px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      color: var(--c-mid-gray);
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 2px solid transparent;
+      width: 100%;
+      text-decoration: none;
+      display: block;
+    }
+    .activity-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--c-white);
+    }
+    .activity-btn.active {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--c-white);
+      border-left: 2px solid var(--c-blue-accent);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .code-box {
+      background-color: #131417;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--c-cyan-light);
+      position: relative;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+    .badge-board {
+      background-color: transparent;
+      color: var(--c-mid-gray);
+      border: none;
+      padding-left: 0;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .nav-pills .nav-link {
+      color: var(--c-mid-gray);
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-right: 14px;
+      margin-bottom: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      background-color: transparent;
+    }
+    .nav-pills .nav-link:hover {
+      color: var(--c-white);
+      border-bottom-color: var(--border-light);
+    }
+    .nav-pills .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      font-weight: 600;
+      border-bottom-color: var(--c-cyan-light);
+    }
+    .nav-tabs .nav-link {
+      color: var(--c-mid-gray);
+      border: 1px solid transparent;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      border-color: transparent transparent var(--c-cyan-light) transparent;
+      font-weight: 600;
+    }
+    .pin-adc, .pin-pwr, .pin-gnd, .pin-warn, .pin-comm, .pin-gpio {
+      background-color: transparent;
+      border: none;
+      padding: 2px 0;
+      font-weight: 600;
+    }
+    .pin-adc { color: var(--c-blue-soft); }
+    .pin-pwr { color: var(--c-dark-gray); }
+    .pin-gnd { color: #b6bcc4; }
+    .pin-warn { color: var(--c-cyan-light); }
+    .pin-comm { color: var(--c-blue-accent); }
+    .pin-gpio { color: var(--c-white); }
+
+    .svg-container {
+      max-width: 100%;
+      height: auto;
+    }
+    .text-cyan { color: var(--c-cyan-light) !important; }
+    .text-blue-light { color: var(--c-blue-soft) !important; }
+    .text-mid-gray { color: #a7acb4 !important; }
+
+    .step-card {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--c-blue-accent);
+      color: var(--c-white);
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+
+    .card { box-shadow: none !important; }
+    .row.g-3 { --bs-gutter-x: 1rem; --bs-gutter-y: 1rem; }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- ================= SIDEBAR ================= -->
+      <nav class="col-lg-3 col-xl-2 d-block sidebar py-3 px-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+          <span class="fs-5 fw-bold text-white"><i class="bi bi-journal-code text-cyan me-2"></i>ESP32 Lab</span>
+          <a href="index.html" class="btn btn-sm btn-outline-light text-cyan border-secondary" title="Volver al Hub">
+            <i class="bi bi-arrow-left"></i> Hub
+          </a>
+        </div>
+
+        <small class="text-uppercase text-mid-gray fw-bold px-1 mb-2 d-block" style="font-size: 0.72rem; letter-spacing: 1px;">
+          Actividades ESP32
+        </small>
+
+        <div class="nav flex-column mb-3">
+          <a href="ESP3201.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3201</div>
+            <div style="font-size: 0.75rem;">Gráfico de Puntos (Processing)</div>
+          </a>
+          <a href="ESP3202.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3202</div>
+            <div style="font-size: 0.75rem;">Gráfico de Líneas Continuas</div>
+          </a>
+          <a href="ESP3203.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3203</div>
+            <div style="font-size: 0.75rem;">Lectura de Potenciómetros (ADC)</div>
+          </a>
+          <a href="ESP3204.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3204</div>
+            <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
+          </a>
+          <a href="ESP3205.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+          <a href="ESP3206.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3206</div>
+            <div style="font-size: 0.75rem;">Sensor de Luz LDR (Fotorresistencia)</div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- ================= CONTENIDO DE LA ACTIVIDAD ================= -->
+      <main class="col-lg-9 col-xl-10 px-3 px-md-4 py-3">
+        
+        <!-- Encabezado -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+          <div>
+            <span class="badge badge-board mb-1">Entradas Analógicas / Divisor de Tensión con Resistencia en Serie</span>
+            <h2 class="h3 fw-bold text-white mb-0">ESP3206: Sensor de Luz LDR (Fotorresistencia)</h2>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <span class="badge badge-board px-3 py-2 fs-6">
+              <i class="bi bi-sun me-1 text-cyan"></i> ESP32 &rarr; Processing
+            </span>
+          </div>
+        </div>
+
+        <!-- TARJETA DEL COMPONENTE Y EXPLICACIÓN DIDÁCTICA -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="row align-items-center g-3">
+            <div class="col-md-3 col-lg-2 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100" height="100" style="background:transparent;">
+                <circle cx="60" cy="45" r="32" fill="#18191b" stroke="#44474f" stroke-width="2"/>
+                <circle cx="60" cy="45" r="26" fill="#78350f" stroke="#d97706" stroke-width="2"/>
+                <!-- Pista en zigzag serpentina precisa LDR -->
+                <path d="M 44,30 H 76 V 36 H 44 V 42 H 76 V 48 H 44 V 54 H 76 V 60 H 44" fill="none" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Patas -->
+                <line x1="48" y1="77" x2="48" y2="110" stroke="#cbd5e1" stroke-width="2.5"/>
+                <line x1="72" y1="77" x2="72" y2="110" stroke="#cbd5e1" stroke-width="2.5"/>
+              </svg>
+            </div>
+            <div class="col-md-9 col-lg-10">
+              <h5 class="text-white mb-1">¿Qué es una Fotorresistencia (LDR) y cómo funciona?</h5>
+              <p class="small text-mid-gray mb-2">
+                Una <strong>LDR</strong> (<em>Light Dependent Resistor</em>) es una resistencia especial que cambia su valor según la cantidad de luz que recibe sobre su superficie:
+              </p>
+              <ul class="small text-mid-gray mb-2 ps-3">
+                <li><strong>Mucha luz:</strong> Su resistencia baja (deja pasar mucha corriente eléctrica).</li>
+                <li><strong>Oscuridad:</strong> Su resistencia sube a valores muy altos (frena el paso de la corriente).</li>
+              </ul>
+              <p class="small text-mid-gray mb-2">
+                Como el ESP32 mide voltaje (y no resistencia directamente), conectamos una resistencia fija de <strong>10 kΩ</strong> en serie con la LDR formando un <strong>divisor de tensión</strong>. El nodo central entre ambas entrega un voltaje proporcional que se conecta al pin <strong>GPIO 32</strong> (ADC1 Canal 4).
+              </p>
+              <div class="d-flex flex-wrap gap-2 small">
+                <span class="badge pin-pwr">Alimentación: 3.3V (Riel V)</span>
+                <span class="badge pin-adc">Pin de Lectura: Señal S (GPIO 32 / ADC 12 bits)</span>
+                <span class="badge pin-gnd">Resistencia en Serie: 10 kΩ a GND (Riel G)</span>
+                <span class="badge badge-board">Rango ADC: 0 (Oscuridad) a 4095 (Luz Máxima)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TARJETA DE APLICACIÓN EN LA VIDA REAL -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-lightbulb-fill text-cyan fs-4 me-2"></i>
+            <h5 class="text-white mb-0">Aplicación en la Vida Real: Alumbrado Público Automático y Sensores Crepusculares</h5>
+          </div>
+          <p class="small text-mid-gray mb-2">
+            Las fotorresistencias son los componentes principales en los sistemas que responden al ciclo día/noche:
+          </p>
+          <div class="row g-2 small">
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-warning d-block mb-1"><i class="bi bi-lamp me-1"></i> Alumbrado Público</strong>
+                <span class="text-mid-gray">Las lámparas de las calles se encienden solas cuando la luz solar disminuye por debajo de un umbral programado.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-info d-block mb-1"><i class="bi bi-phone me-1"></i> Brillo Automático</strong>
+                <span class="text-mid-gray">Los teléfonos móviles y pantallas de vehículos ajustan su brillo para no deslumbrar al usuario en cuartos oscuros.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-display me-1"></i> Telemetría y Mapeo</strong>
+                <span class="text-mid-gray">Processing recibe el valor analógico dentro de <code>draw()</code> y traza la curva de luminosidad a lo largo del tiempo.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestañas Parte A y B -->
+        <ul class="nav nav-pills mb-3" id="partTabs">
+          <li class="nav-item">
+            <button class="nav-link active" id="tabPartA" onclick="setPart('A')">Parte A: 1 Señal (LDR en GPIO 32)</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tabPartB" onclick="setPart('B')">Parte B: 2 Señales Simultáneas (LDR y Potenciómetro)</button>
+          </li>
+        </ul>
+
+        <!-- Ficha Técnica -->
+        <div class="row g-3 mb-4">
+          <!-- Diagrama de Conexión SVG -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-white mb-0" id="diagramTitle"><i class="bi bi-diagram-3-fill text-cyan me-2"></i>Circuito Divisor de Tensión (LDR + 10 kΩ)</h6>
+                <span class="badge bg-secondary text-white" id="diagramBadge">Lógica: 3.3V (ADC1_CH4)</span>
+              </div>
+              <div class="text-center py-2" id="svgContainer"></div>
+            </div>
+          </div>
+
+          <!-- Tabla de Mapeo de Terminales -->
+          <div class="col-xl-6">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <h6 class="text-white mb-2"><i class="bi bi-table text-cyan me-2"></i>Mapeo Eléctrico y Variables</h6>
+              <div class="table-responsive">
+                <table class="table table-dark table-bordered small align-middle mb-0">
+                  <thead class="table-secondary text-dark">
+                    <tr>
+                      <th>Componente</th>
+                      <th>Conexión / Pin</th>
+                      <th>Fila Shield GVS</th>
+                      <th>Variable en Processing</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pinTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="p-2 rounded bg-card border border-secondary mt-3">
+                <small class="text-cyan d-block fw-bold"><i class="bi bi-info-circle me-1"></i> Identificación de Variables en Processing:</small>
+                <small class="text-mid-gray">
+                  Al recibir la trama por Serial en <code>draw()</code>, la función <code>split(trama, ',')</code> guarda los datos en el arreglo <code>valores[]</code>: el primer valor se almacena en <strong>X1</strong> (LDR) y el segundo en <strong>X2</strong> (Potenciómetro).
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SIMULADOR DIDÁCTICO ================= -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+            <div>
+              <h5 class="text-white mb-0"><i class="bi bi-sliders text-cyan me-2"></i>Simulador Didáctico: Respuesta a la Luz</h5>
+              <small class="text-mid-gray">Ajusta la intensidad de luz sobre la fotorresistencia para observar el cambio de voltaje y su conversión a 12 bits.</small>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-md-0">
+              <button class="btn btn-sm btn-outline-info text-cyan" onclick="fijarLuz(400)">Noche / Oscuro (ADC ~400)</button>
+              <button class="btn btn-sm btn-outline-light" onclick="fijarLuz(2048)">Luz Interior (ADC ~2048)</button>
+              <button class="btn btn-sm btn-outline-warning" onclick="fijarLuz(3800)">Linterna Directa (ADC ~3800)</button>
+            </div>
+          </div>
+
+          <!-- 3 Pasos Explicados con Sencillez -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">1</span>
+                  <h6 class="text-white mb-0">1. Lectura ADC en Arduino</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">El ESP32 digitaliza el divisor de tensión con <code>analogRead(32)</code> de 0 a 4095:</p>
+                <span class="badge pin-adc d-block text-center py-2 fs-6" id="simBadgeADC">analogRead(32) = 2048</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">2</span>
+                  <h6 class="text-white mb-0" id="simStep2Title">2. Recepción en Processing</h6>
+                </div>
+                <p class="small text-mid-gray mb-1" id="simStep2Desc">Processing lee la trama en <code>draw()</code> y la guarda en la variable <strong>X1</strong>:</p>
+                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simStep2Formula">X1 = float(mensaje); // 2048</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">3</span>
+                  <h6 class="text-white mb-0">3. Escalado y Trazo con line()</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">Se escala al alto del cuadro (300 ÷ 4095 = 0.07326) y se une con el punto anterior:</p>
+                <span class="badge pin-warn d-block text-center py-2 fs-6" id="simBadgeLine">line(contador+50, anterior_1, contador+60, Y);</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Deslizante de Luz Virtual -->
+          <div class="p-3 rounded bg-main border border-secondary">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="sliderLdr" class="form-label text-white small fw-bold d-flex justify-content-between">
+                  <span><i class="bi bi-sun-fill text-warning me-1"></i> Nivel de Luz sobre la LDR (Valor ADC):</span>
+                  <span class="text-warning fw-bold" id="lblSliderLdr">2048 (50%)</span>
+                </label>
+                <input type="range" class="form-range" min="0" max="4095" value="2048" id="sliderLdr" oninput="actualizarSimulador()">
+              </div>
+              <div class="col-md-6">
+                <label for="sliderPot" class="form-label text-white small fw-bold d-flex justify-content-between">
+                  <span><i class="bi bi-sliders text-cyan me-1"></i> Potenciómetro Comparativo (Canal 2):</span>
+                  <span class="text-cyan fw-bold" id="lblSliderPot">1500 (36%)</span>
+                </label>
+                <input type="range" class="form-range" min="0" max="4095" value="1500" id="sliderPot" oninput="actualizarSimulador()">
+              </div>
+            </div>
+
+            <div class="row g-2 mt-3">
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Línea enviada por Serial hacia Processing:</small>
+                  <code class="text-cyan fw-bold" id="simTextoSerial">2048</code>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-2 rounded bg-card border border-secondary text-center">
+                  <small class="text-mid-gray d-block">Voltaje en el Pin S (GPIO 32):</small>
+                  <span class="text-white small fw-bold" id="simVoltaje">1.65 V &nbsp;|&nbsp; Variable X1 en Processing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= CÓDIGOS FUENTE (ARDUINO IDE & PROCESSING) ================= -->
+        <div class="card bg-dark border-secondary p-3">
+          
+          <ul class="nav nav-tabs border-secondary mb-3" id="codeSourceTabs">
+            <li class="nav-item">
+              <button class="nav-link active" id="btnTabArduino" onclick="switchCodeTab('arduino')">
+                <i class="bi bi-cpu me-1"></i> Código ESP32 (Arduino IDE)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="btnTabProcessing" onclick="switchCodeTab('processing')">
+                <i class="bi bi-display me-1"></i> Código Processing (Java)
+              </button>
+            </li>
+          </ul>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-mid-gray" id="codeDescription">Firmware a cargar en el ESP32 mediante Arduino IDE</span>
+            <button class="btn btn-sm btn-outline-light text-cyan" onclick="copyCode()"><i class="bi bi-clipboard me-1"></i> Copiar Código Activo</button>
+          </div>
+
+          <pre class="code-box mb-0" id="codeBlock"><code>// Cargando código...</code></pre>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentPart = 'A';
+    let currentCodeTab = 'arduino';
+
+    const codes = {
+      A: {
+        diagramTitle: "Circuito Divisor de Tensión (LDR + 10 kΩ en GPIO 32)",
+        codeArduino: 
+`// ==========================================================
+// ACTIVIDAD ESP3206 - PARTE A (ESP32): LECTURA DE LDR
+// Circuito Divisor de Tensión: LDR + Resistencia fija de 10 kΩ
+// Punto central conectado a la fila GPIO 32 (Tríada G-V-S)
+// ==========================================================
+
+const int pinLDR = 32; // ADC1 Canal 4 (Fila GPIO 32)
+
+void setup() {
+  Serial.begin(115200); // Misma velocidad que en Processing
+}
+
+void loop() {
+  // El conversor ADC entrega valores de 12 bits (0 a 4095)
+  int valorLuz = analogRead(pinLDR);
+  
+  // Enviamos el valor crudo seguido de salto de línea (\\n)
+  Serial.println(valorLuz);
+  
+  delay(100); // Pausa de 100 ms para sincronizar con Processing
+}`,
+        codeProcessing: 
+`// ==========================================================
+// ACTIVIDAD ESP3206 - PARTE A (PROCESSING): GRÁFICO CONTINUO LDR
+// Solo usando setup() y draw(), recibiendo datos en la variable X1
+// ==========================================================
+
+import processing.serial.*;
+
+Serial miPuerto;
+
+int contador = 0;
+float X1 = 0; // Variable donde se almacena el dato de la LDR
+float anterior_1;
+
+void setup()
+{
+  size(800, 600);
+  background(0, 0, 0);
+
+  // dibujo de cuadricula
+  stroke(255, 255, 0);
+  fill(50);
+  rect(50, 200, 500, 300);
+
+  // Configuración del puerto serial
+  printArray(Serial.list());
+  String nombrePuerto = Serial.list()[0]; // Selecciona el puerto COM de tu ESP32
+  miPuerto = new Serial(this, nombrePuerto, 115200);
+
+  anterior_1 = 350; // Punto inicial dentro del cuadro
+}
+
+void draw()
+{
+  strokeWeight(1);
+
+  // Título
+  textSize(40);
+  fill(0, 255, 0);
+  text("Monitoreo de Luz (LDR)", 50, 50);
+
+  // cuadro para los numeros
+  stroke(255, 255, 0);
+  fill(50);
+  rect(450, 10, 300, 70);
+
+  // Leer dato del ESP32 dentro de draw() si está disponible
+  if (miPuerto.available() > 0) {
+    String mensaje = miPuerto.readStringUntil('\\n');
+    if (mensaje != null) {
+      mensaje = trim(mensaje);
+      X1 = float(mensaje); // El valor de la LDR se guarda en X1
+    }
+  }
+
+  // imprimir valor numerico en pantalla
+  textSize(35);
+  fill(255, 255, 0);
+  text("Luz: " + int(X1), 460, 55);
+
+  // Si llega al borde derecho (500 px), limpia la pantalla
+  if (contador >= 500)
+  {
+    contador = 0;
+
+    // redibujar marco de osciloscopio
+    stroke(255, 255, 0);
+    fill(50);
+    rect(50, 200, 500, 300);
+
+    // Escala de 12 bits: 300 / 4095 = 0.07326
+    anterior_1 = X1 * .07326 + 200;
+  }
+
+  // Dibujar linea continua de la LDR (Color CYAN)
+  strokeWeight(3);
+  stroke(0, 255, 255);
+  line(contador + 50, anterior_1, contador + 60, X1 * .07326 + 200);
+
+  // Guardar memoria y avanzar 10 pixeles
+  anterior_1 = X1 * .07326 + 200;
+  contador = contador + 10;
+
+  delay(100);
+}`,
+        pins: [
+          { comp: "Fotorresistencia LDR", pinComp: "Extremo 1 (VCC)", boardPin: "Pin V (Fila GPIO 32)", varName: "--- (Alimentación 3.3V)" },
+          { comp: "Punto Unión (LDR + 10 kΩ)", pinComp: "Nodo Central", boardPin: "Pin S (Fila GPIO 32)", varName: "X1 (Valor LDR)" },
+          { comp: "Resistencia 10 kΩ", pinComp: "Extremo 2 (GND)", boardPin: "Pin G (Fila GPIO 32)", varName: "--- (Referencia 0V)" }
+        ]
+      },
+
+      B: {
+        diagramTitle: "Conexión Dual: Divisor LDR (GPIO 32) + Potenciómetro (GPIO 33)",
+        codeArduino: 
+`// ==========================================================
+// ACTIVIDAD ESP3206 - PARTE B (ESP32): 2 SEÑALES (LDR Y POTENCIÓMETRO)
+// LDR + 10 kΩ -> Fila GPIO 32 (ADC1_CH4)
+// Potenciómetro -> Fila GPIO 33 (ADC1_CH5)
+// ==========================================================
+
+const int pinLDR = 32; // Entrada Analógica 1 (Fila GPIO 32)
+const int pinPot = 33; // Entrada Analógica 2 (Fila GPIO 33)
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Lectura de ambos sensores analógicos de 12 bits (0 a 4095)
+  int valLDR = analogRead(pinLDR);
+  int valPot = analogRead(pinPot);
+
+  // Envío en formato CSV: "VALOR_LDR,VALOR_POT\\n"
+  Serial.print(valLDR);
+  Serial.print(",");
+  Serial.println(valPot);
+
+  delay(100);
+}`,
+        codeProcessing: 
+`// ==========================================================
+// ACTIVIDAD ESP3206 - PARTE B (PROCESSING): 2 LÍNEAS CONTINUAS
+// Desempaqueta con split() en setup() y draw()
+// X1 almacena la LDR y X2 almacena el Potenciómetro
+// ==========================================================
+
+import processing.serial.*;
+
+Serial miPuerto;
+
+int contador = 0;
+float X1 = 0; // Variable para almacenar la LDR (Valor 1)
+float X2 = 0; // Variable para almacenar el Potenciómetro (Valor 2)
+
+float anterior_1;
+float anterior_2;
+
+void setup()
+{
+  size(800, 600);
+  background(0, 0, 0);
+
+  // dibujo de cuadricula
+  stroke(255, 255, 0);
+  fill(50);
+  rect(50, 200, 500, 300);
+
+  // Configuración del puerto serial
+  printArray(Serial.list());
+  String nombrePuerto = Serial.list()[0];
+  miPuerto = new Serial(this, nombrePuerto, 115200);
+
+  // Puntos iniciales dentro del marco
+  anterior_1 = 350;
+  anterior_2 = 250;
+}
+
+void draw()
+{
+  strokeWeight(1);
+
+  // Título
+  textSize(36);
+  fill(0, 255, 0);
+  text("Monitoreo Dual: LDR y Potenciómetro", 50, 50);
+
+  // cuadro para los numeros
+  stroke(255, 255, 0);
+  fill(50);
+  rect(420, 10, 350, 70);
+
+  // Leer trama serial y separar datos dentro de draw()
+  if (miPuerto.available() > 0) {
+    String trama = miPuerto.readStringUntil('\\n');
+    if (trama != null) {
+      trama = trim(trama);
+      String[] valores = split(trama, ','); // Separar por la coma
+      if (valores.length == 2) {
+        X1 = float(valores[0]); // Se guarda la LDR en la variable X1
+        X2 = float(valores[1]); // Se guarda el Potenciómetro en la variable X2
+      }
+    }
+  }
+
+  // imprimir ambos valores
+  textSize(24);
+  fill(255, 255, 0);
+  text("LDR:" + int(X1) + " | POT:" + int(X2), 435, 52);
+
+  // Limpieza de pantalla al llegar al borde derecho
+  if (contador >= 500)
+  {
+    contador = 0;
+
+    stroke(255, 255, 0);
+    fill(50);
+    rect(50, 200, 500, 300);
+
+    // Reiniciar puntos base
+    anterior_1 = X1 * .07326 + 200;
+    anterior_2 = X2 * .07326 + 200;
+  }
+
+  strokeWeight(3);
+
+  // Señal 1: Fotorresistencia LDR (Color CYAN)
+  stroke(0, 255, 255);
+  line(contador + 50, anterior_1, contador + 60, X1 * .07326 + 200);
+
+  // Señal 2: Potenciómetro (Color AMARILLO)
+  stroke(255, 255, 0);
+  line(contador + 50, anterior_2, contador + 60, X2 * .07326 + 200);
+
+  // Actualizar memorias y avanzar 10 pixeles
+  anterior_1 = X1 * .07326 + 200;
+  anterior_2 = X2 * .07326 + 200;
+  contador = contador + 10;
+
+  delay(100);
+}`,
+        pins: [
+          { comp: "Divisor LDR + 10 kΩ", pinComp: "Nodo Central", boardPin: "Pin S (Fila GPIO 32)", varName: "X1 (Valor LDR)" },
+          { comp: "Divisor LDR + 10 kΩ", pinComp: "Alimentación / GND", boardPin: "Pines V y G (Fila GPIO 32)", varName: "3.3V y 0V" },
+          { comp: "Potenciómetro 10 kΩ", pinComp: "Pin Central (Señal)", boardPin: "Pin S (Fila GPIO 33)", varName: "X2 (Valor Potenciómetro)" },
+          { comp: "Potenciómetro 10 kΩ", pinComp: "Extremos VCC / GND", boardPin: "Pines V y G (Fila GPIO 33)", varName: "3.3V y 0V" }
+        ]
+      }
+    };
+
+    function setPart(part) {
+      currentPart = part;
+      document.getElementById('tabPartA').classList.toggle('active', part === 'A');
+      document.getElementById('tabPartB').classList.toggle('active', part === 'B');
+      render();
+    }
+
+    function switchCodeTab(tab) {
+      currentCodeTab = tab;
+      document.getElementById('btnTabArduino').classList.toggle('active', tab === 'arduino');
+      document.getElementById('btnTabProcessing').classList.toggle('active', tab === 'processing');
+      
+      const act = codes[currentPart];
+      if (tab === 'arduino') {
+        document.getElementById('codeDescription').innerText = "Firmware a cargar en el ESP32 mediante Arduino IDE";
+        document.getElementById('codeBlock').innerText = act.codeArduino;
+      } else {
+        document.getElementById('codeDescription').innerText = "Sketch simple en Processing IDE usando solo setup() y draw()";
+        document.getElementById('codeBlock').innerText = act.codeProcessing;
+      }
+    }
+
+    function render() {
+      const data = codes[currentPart];
+      switchCodeTab(currentCodeTab);
+      document.getElementById('diagramTitle').innerHTML = `<i class="bi bi-diagram-3-fill text-cyan me-2"></i> ${data.diagramTitle}`;
+
+      let rows = '';
+      data.pins.forEach(p => {
+        rows += `<tr>
+          <td class="text-white fw-bold">${p.comp}</td>
+          <td>${p.pinComp}</td>
+          <td><span class="badge pin-adc">${p.boardPin}</span></td>
+          <td><strong class="text-cyan">${p.varName}</strong></td>
+        </tr>`;
+      });
+      document.getElementById('pinTableBody').innerHTML = rows;
+
+      if (currentPart === 'A') {
+        document.getElementById('diagramBadge').innerText = "Lógica: 3.3V (ADC1_CH4)";
+        // SVG PARTE A: Solo Divisor LDR en GPIO 32
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 240" class="svg-container" style="background:#121315; border-radius:8px;">
+            <!-- Bloque Shield ESP32 -->
+            <rect x="25" y="25" width="160" height="190" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+            <text x="105" y="52" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">ESP32 SHIELD</text>
+            <text x="105" y="68" fill="#6bbef9" font-size="9" text-anchor="middle">FILA GPIO 32</text>
+            
+            <circle cx="170" cy="80" r="4.5" fill="#6bbef9"/>
+            <text x="158" y="84" fill="#ffffff" font-size="9" text-anchor="end">V (3.3V)</text>
+            
+            <circle cx="170" cy="120" r="4.5" fill="#97e9ff"/>
+            <text x="158" y="124" fill="#97e9ff" font-size="9" text-anchor="end">S (GPIO 32)</text>
+            
+            <circle cx="170" cy="160" r="4.5" fill="#8c8c8c"/>
+            <text x="158" y="164" fill="#adb5bd" font-size="9" text-anchor="end">G (GND)</text>
+
+            <!-- Bloque Divisor de Tensión -->
+            <rect x="270" y="25" width="225" height="190" rx="8" fill="#18191b" stroke="#44474f" stroke-width="1.5"/>
+            <text x="382" y="48" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">DIVISOR DE TENSIÓN</text>
+
+            <!-- Línea 3.3V -> LDR -->
+            <path d="M 170,80 L 235,80 L 235,60 L 350,60 L 350,70" fill="none" stroke="#6bbef9" stroke-width="2.5"/>
+            <circle cx="350" cy="60" r="3" fill="#6bbef9"/>
+
+            <!-- LDR -->
+            <circle cx="350" cy="86" r="16" fill="#78350f" stroke="#d97706" stroke-width="2"/>
+            <path d="M 340,76 H 360 V 81 H 340 V 86 H 360 V 91 H 340 V 96 H 360" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="380" y="90" fill="#fef08a" font-size="10" font-weight="bold">LDR</text>
+
+            <line x1="350" y1="102" x2="350" y2="120" stroke="#97e9ff" stroke-width="2.5"/>
+
+            <!-- Nodo Central -> Pin S -->
+            <line x1="170" y1="120" x2="350" y2="120" stroke="#97e9ff" stroke-width="2.5"/>
+            <circle cx="350" cy="120" r="5" fill="#97e9ff" stroke="#ffffff" stroke-width="1"/>
+            <text x="365" y="124" fill="#97e9ff" font-size="9" font-weight="bold">Nodo S (Señal)</text>
+
+            <line x1="350" y1="120" x2="350" y2="138" stroke="#97e9ff" stroke-width="2.5"/>
+
+            <!-- Resistencia 10 kΩ -->
+            <rect x="342" y="138" width="16" height="32" rx="3" fill="#2d3036" stroke="#9aa0a8" stroke-width="1.5"/>
+            <line x1="342" y1="145" x2="358" y2="145" stroke="#92400e" stroke-width="2.5"/>
+            <line x1="342" y1="153" x2="358" y2="153" stroke="#000000" stroke-width="2.5"/>
+            <line x1="342" y1="161" x2="358" y2="161" stroke="#ea580c" stroke-width="2.5"/>
+            <text x="375" y="158" fill="#cbd5e1" font-size="10" font-weight="bold">10 kΩ</text>
+
+            <!-- Resistencia -> GND -->
+            <path d="M 350,170 L 350,185 L 235,185 L 235,160 L 170,160" fill="none" stroke="#8c8c8c" stroke-width="2.5"/>
+            <circle cx="350" cy="185" r="3" fill="#8c8c8c"/>
+          </svg>
+        `;
+      } else {
+        document.getElementById('diagramBadge').innerText = "Lógica: 3.3V (ADC1_CH4 y ADC1_CH5)";
+        // SVG PARTE B: Divisor LDR (GPIO 32) + Potenciómetro (GPIO 33)
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 280" class="svg-container" style="background:#121315; border-radius:8px;">
+            <!-- Bloque Shield ESP32 -->
+            <rect x="15" y="15" width="165" height="250" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+            <text x="97" y="36" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">ESP32 SHIELD</text>
+            
+            <!-- Tríada GPIO 32 (LDR) -->
+            <rect x="22" y="48" width="150" height="95" rx="5" fill="#18191b" stroke="#33373d"/>
+            <text x="28" y="62" fill="#6bbef9" font-size="8" font-weight="bold">FILA GPIO 32 (LDR)</text>
+            <circle cx="165" cy="74" r="4" fill="#6bbef9"/><text x="156" y="77" fill="#ffffff" font-size="8" text-anchor="end">V (3.3V)</text>
+            <circle cx="165" cy="95" r="4" fill="#97e9ff"/><text x="156" y="98" fill="#97e9ff" font-size="8" text-anchor="end">S (IO 32)</text>
+            <circle cx="165" cy="116" r="4" fill="#8c8c8c"/><text x="156" y="119" fill="#adb5bd" font-size="8" text-anchor="end">G (GND)</text>
+
+            <!-- Tríada GPIO 33 (Potenciómetro) -->
+            <rect x="22" y="152" width="150" height="95" rx="5" fill="#18191b" stroke="#33373d"/>
+            <text x="28" y="166" fill="#fbbf24" font-size="8" font-weight="bold">FILA GPIO 33 (POT)</text>
+            <circle cx="165" cy="178" r="4" fill="#6bbef9"/><text x="156" y="181" fill="#ffffff" font-size="8" text-anchor="end">V (3.3V)</text>
+            <circle cx="165" cy="199" r="4" fill="#fbbf24"/><text x="156" y="202" fill="#fbbf24" font-size="8" text-anchor="end">S (IO 33)</text>
+            <circle cx="165" cy="220" r="4" fill="#8c8c8c"/><text x="156" y="223" fill="#adb5bd" font-size="8" text-anchor="end">G (GND)</text>
+
+            <!-- ================= BLOQUE SUPERIOR: LDR + 10 kΩ ================= -->
+            <rect x="290" y="20" width="235" height="115" rx="6" fill="#18191b" stroke="#44474f" stroke-width="1.2"/>
+            <text x="407" y="34" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">DIVISOR LDR + 10 kΩ (CANAL 1)</text>
+            
+            <!-- Conexión 3.3V a LDR -->
+            <path d="M 165,74 L 230,74 L 230,50 L 360,50 L 360,58" fill="none" stroke="#6bbef9" stroke-width="2"/>
+            
+            <!-- LDR -->
+            <circle cx="360" cy="70" r="11" fill="#78350f" stroke="#d97706" stroke-width="1.5"/>
+            <path d="M 353,63 H 367 V 67 H 353 V 71 H 367 V 75 H 353" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="382" y="73" fill="#fef08a" font-size="8" font-weight="bold">LDR</text>
+
+            <!-- Nodo Central a GPIO 32 -->
+            <line x1="165" y1="95" x2="360" y2="95" stroke="#97e9ff" stroke-width="2"/>
+            <circle cx="360" cy="95" r="4" fill="#97e9ff" stroke="#ffffff" stroke-width="1"/>
+            <line x1="360" y1="81" x2="360" y2="108" stroke="#97e9ff" stroke-width="2"/>
+
+            <!-- Resistencia 10 kΩ -->
+            <rect x="353" y="108" width="14" height="18" rx="2" fill="#2d3036" stroke="#9aa0a8" stroke-width="1"/>
+            <line x1="353" y1="113" x2="367" y2="113" stroke="#92400e" stroke-width="1.8"/>
+            <line x1="353" y1="117" x2="367" y2="117" stroke="#000000" stroke-width="1.8"/>
+            <line x1="353" y1="121" x2="367" y2="121" stroke="#ea580c" stroke-width="1.8"/>
+            <text x="382" y="120" fill="#cbd5e1" font-size="8" font-weight="bold">10 kΩ</text>
+
+            <!-- Resistencia a GND -->
+            <path d="M 360,126 L 360,131 L 230,131 L 230,116 L 165,116" fill="none" stroke="#8c8c8c" stroke-width="2"/>
+
+            <!-- ================= BLOQUE INFERIOR: POTENCIÓMETRO ================= -->
+            <rect x="290" y="145" width="235" height="115" rx="6" fill="#18191b" stroke="#44474f" stroke-width="1.2"/>
+            <text x="407" y="159" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">POTENCIÓMETRO 10 kΩ (CANAL 2)</text>
+
+            <!-- Conexión Tríada G-V-S al Potenciómetro -->
+            <line x1="165" y1="178" x2="315" y2="178" stroke="#6bbef9" stroke-width="2"/>
+            <line x1="165" y1="199" x2="315" y2="199" stroke="#fbbf24" stroke-width="2"/>
+            <line x1="165" y1="220" x2="315" y2="220" stroke="#8c8c8c" stroke-width="2"/>
+
+            <!-- Potenciómetro Gráfico -->
+            <rect x="315" y="168" width="105" height="65" rx="5" fill="#2c2e33" stroke="#8c8c8c" stroke-width="1.2"/>
+            <circle cx="380" cy="200" r="16" fill="#18191b" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="380" y="203" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">POT</text>
+            
+            <circle cx="315" cy="178" r="3.5" fill="#6bbef9"/><text x="323" y="181" fill="#6bbef9" font-size="7">VCC</text>
+            <circle cx="315" cy="199" r="3.5" fill="#fbbf24"/><text x="323" y="202" fill="#fbbf24" font-size="7">SIG</text>
+            <circle cx="315" cy="220" r="3.5" fill="#8c8c8c"/><text x="323" y="223" fill="#adb5bd" font-size="7">GND</text>
+          </svg>
+        `;
+      }
+    }
+
+    function actualizarSimulador() {
+      const valLdr = parseInt(document.getElementById('sliderLdr').value);
+      const valPot = parseInt(document.getElementById('sliderPot').value);
+      
+      const porcLdr = Math.round((valLdr / 4095) * 100);
+      const porcPot = Math.round((valPot / 4095) * 100);
+      const voltLdr = (valLdr * (3.3 / 4095.0)).toFixed(2);
+
+      document.getElementById('lblSliderLdr').innerText = `${valLdr} (${porcLdr}%)`;
+      document.getElementById('lblSliderPot').innerText = `${valPot} (${porcPot}%)`;
+
+      document.getElementById('simBadgeADC').innerText = `analogRead(32) = ${valLdr}`;
+      document.getElementById('simVoltaje').innerText = `${voltLdr} V  |  Almacenado en variable X1`;
+
+      if (currentPart === 'A') {
+        document.getElementById('simStep2Formula').innerText = `X1 = float(mensaje); // ${valLdr}`;
+        document.getElementById('simTextoSerial').innerText = `${valLdr}`;
+      } else {
+        document.getElementById('simStep2Formula').innerText = `X1 = float(valores[0]); // ${valLdr} (LDR)\nX2 = float(valores[1]); // ${valPot} (POT)`;
+        document.getElementById('simTextoSerial').innerText = `${valLdr},${valPot}`;
+      }
+    }
+
+    function fijarLuz(valor) {
+      document.getElementById('sliderLdr').value = valor;
+      actualizarSimulador();
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeBlock').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Código copiado al portapapeles con éxito');
+      });
+    }
+
+    render();
+    actualizarSimulador();
+  </script>
+</body>
+</html>
