@@ -199,6 +199,23 @@
             <div class="small fw-bold text-white">ESP3204</div>
             <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
           </a>
+          <a href="ESP3205.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+          <a href="ESP3206.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3206</div>
+            <div style="font-size: 0.75rem;">Sensor de Luz LDR (Fotorresistencia)</div>
+          </a>
+          <a href="ESP3207.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3207</div>
+            <div style="font-size: 0.75rem;">Control de 2 LEDs (Processing &rarr; ESP32)</div>
+          </a>
+          <a href="ESP3208.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3208</div>
+            <div style="font-size: 0.75rem;">Control de Motor DC (L293D)</div>
+          </a>
+
         </div>
       </nav>
 
@@ -266,7 +283,7 @@
             <div class="card bg-dark border-secondary p-3 h-100">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="text-white mb-0" id="diagramTitle"><i class="bi bi-diagram-3-fill text-cyan me-2"></i>Conexión en Shield GVS</h6>
-                <span class="badge bg-secondary text-white">Lógica: 3.3V (12-bit)</span>
+                <span class="badge bg-secondary text-white" id="diagramBadge">Lógica: 3.3V (12-bit)</span>
               </div>
               <div class="text-center py-2" id="svgContainer"></div>
             </div>
@@ -438,7 +455,7 @@ void loop() {
         codeProcessing: 
 `// ==========================================================
 // ACTIVIDAD ESP3204 - PARTE A (PROCESSING): GRÁFICA CONTINUA
-// Recibe el valor serial del ESP32 y traza la señal en tiempo real
+// Recibe el valor serial dentro de draw() en la variable X1
 // ==========================================================
 
 import processing.serial.*;
@@ -463,7 +480,6 @@ void setup()
   printArray(Serial.list()); // Lista puertos disponibles en consola
   String nombrePuerto = Serial.list()[0]; // Cambia [0] por el puerto de tu ESP32
   miPuerto = new Serial(this, nombrePuerto, 115200);
-  miPuerto.bufferUntil('\\n'); // Lee tramas completas hasta el salto de línea
 
   // Punto inicial en el centro del marco (Y = 350)
   anterior_1 = 350;
@@ -482,6 +498,15 @@ void draw()
   stroke(255, 255, 0);
   fill(50);
   rect(450, 10, 200, 70);
+
+  // Lectura directa en draw()
+  if (miPuerto.available() > 0) {
+    String mensaje = miPuerto.readStringUntil('\\n');
+    if (mensaje != null) {
+      mensaje = trim(mensaje);
+      X1 = float(mensaje); // Actualiza la variable con la lectura del ESP32
+    }
+  }
 
   // Imprimir valor numérico
   textSize(40);
@@ -513,16 +538,6 @@ void draw()
   contador = contador + 10;
 
   delay(100);
-}
-
-// Evento que se ejecuta cada vez que llega un nuevo dato por USB
-void serialEvent(Serial p)
-{
-  String mensaje = p.readStringUntil('\\n');
-  if (mensaje != null) {
-    mensaje = trim(mensaje);
-    X1 = float(mensaje); // Actualiza la variable con la lectura del ESP32
-  }
 }`,
         pins: [
           { comp: "Potenciómetro 1", pinComp: "Pin Central (Señal)", boardPin: "Pin S (Fila GPIO 32)", line: "Entrada Analógica ADC1_CH4" },
@@ -559,7 +574,7 @@ void loop() {
         codeProcessing: 
 `// ==========================================================
 // ACTIVIDAD ESP3204 - PARTE B (PROCESSING): OSCILOSCOPIO DUAL
-// Recibe 2 señales seriales y traza 2 ondas continuas simultáneas
+// Recibe 2 señales seriales usando split() dentro de draw()
 // ==========================================================
 
 import processing.serial.*;
@@ -587,7 +602,6 @@ void setup()
   printArray(Serial.list());
   String nombrePuerto = Serial.list()[0];
   miPuerto = new Serial(this, nombrePuerto, 115200);
-  miPuerto.bufferUntil('\\n');
 
   // Puntos iniciales en el marco
   anterior_1 = 350;
@@ -606,6 +620,19 @@ void draw()
   stroke(255, 255, 0);
   fill(50);
   rect(450, 10, 200, 70);
+
+  // Desempaquetado de trama CSV ("val1,val2") en draw()
+  if (miPuerto.available() > 0) {
+    String trama = miPuerto.readStringUntil('\\n');
+    if (trama != null) {
+      trama = trim(trama);
+      String[] valores = split(trama, ',');
+      if (valores.length == 2) {
+        X1 = float(valores[0]); // Potenciómetro 1 (GPIO 32)
+        X2 = float(valores[1]); // Potenciómetro 2 (GPIO 33)
+      }
+    }
+  }
 
   // Imprimir valor numérico
   textSize(30);
@@ -643,20 +670,6 @@ void draw()
   contador = contador + 10;
 
   delay(100);
-}
-
-// Desempaquetado de trama CSV ("val1,val2")
-void serialEvent(Serial p)
-{
-  String trama = p.readStringUntil('\\n');
-  if (trama != null) {
-    trama = trim(trama);
-    String[] valores = split(trama, ',');
-    if (valores.length == 2) {
-      X1 = float(valores[0]); // Potenciómetro 1 (GPIO 32)
-      X2 = float(valores[1]); // Potenciómetro 2 (GPIO 33)
-    }
-  }
 }`,
         pins: [
           { comp: "Potenciómetro 1", pinComp: "Pin Central (Señal 1)", boardPin: "Pin S (Fila GPIO 32)", line: "Entrada Analógica 1 (ADC1_CH4)" },
