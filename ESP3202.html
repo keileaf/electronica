@@ -199,6 +199,23 @@
             <div class="small fw-bold text-white">ESP3204</div>
             <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
           </a>
+          <a href="ESP3205.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+          <a href="ESP3206.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3206</div>
+            <div style="font-size: 0.75rem;">Sensor de Luz LDR (Fotorresistencia)</div>
+          </a>
+          <a href="ESP3207.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3207</div>
+            <div style="font-size: 0.75rem;">Control de 2 LEDs (Processing &rarr; ESP32)</div>
+          </a>
+          <a href="ESP3208.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3208</div>
+            <div style="font-size: 0.75rem;">Control de Motor DC (L293D)</div>
+          </a>
+
         </div>
       </nav>
 
@@ -597,7 +614,11 @@ void draw()
             <rect x="330" y="25" width="180" height="48" fill="#323232" stroke="#eab308" stroke-width="1.5"/>
             <text x="340" y="58" fill="#eab308" font-size="16" font-weight="bold">X1 = 612.8</text>
             <rect x="45" y="110" width="440" height="180" fill="#323232" stroke="#eab308" stroke-width="2"/>
+            
+            <!-- Trazo continuo de líneas -->
             <path d="M 50,250 L 90,180 L 130,230 L 170,150 L 210,210 L 250,140 L 290,260" fill="none" stroke="#00ffff" stroke-width="3"/>
+            
+            <!-- Cota del segmento actual -->
             <circle cx="250" cy="140" r="4" fill="#ffffff" stroke="#00ffff" stroke-width="1.5"/>
             <circle cx="290" cy="260" r="4" fill="#00ffff"/>
             <line x1="250" y1="140" x2="290" y2="260" stroke="#ffffff" stroke-dasharray="2,2" stroke-width="1.5"/>
@@ -613,8 +634,13 @@ void draw()
             <rect x="330" y="25" width="180" height="48" fill="#323232" stroke="#eab308" stroke-width="1.5"/>
             <text x="340" y="58" fill="#eab308" font-size="16" font-weight="bold">X1 = 612.8</text>
             <rect x="45" y="110" width="440" height="180" fill="#323232" stroke="#eab308" stroke-width="2"/>
+            
+            <!-- Señal 1: CYAN -->
             <path d="M 50,250 L 90,180 L 130,230 L 170,150 L 210,210 L 250,140 L 290,260" fill="none" stroke="#00ffff" stroke-width="3"/>
+            
+            <!-- Señal 2: AMARILLO -->
             <path d="M 50,160 L 90,240 L 130,170 L 170,220 L 210,130 L 250,230 L 290,170" fill="none" stroke="#ffff00" stroke-width="3"/>
+
             <text x="300" y="260" fill="#00ffff" font-size="8" font-weight="bold">Señal 1 (anterior_1)</text>
             <text x="300" y="170" fill="#ffff00" font-size="8" font-weight="bold">Señal 2 (anterior_2)</text>
           </svg>
