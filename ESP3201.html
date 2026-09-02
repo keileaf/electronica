@@ -199,6 +199,23 @@
             <div class="small fw-bold text-white">ESP3204</div>
             <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
           </a>
+          <a href="ESP3205.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+          <a href="ESP3206.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3206</div>
+            <div style="font-size: 0.75rem;">Sensor de Luz LDR (Fotorresistencia)</div>
+          </a>
+          <a href="ESP3207.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3207</div>
+            <div style="font-size: 0.75rem;">Control de 2 LEDs (Processing &rarr; ESP32)</div>
+          </a>
+          <a href="ESP3208.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3208</div>
+            <div style="font-size: 0.75rem;">Control de Motor DC (L293D)</div>
+          </a>
+
         </div>
       </nav>
 
@@ -244,7 +261,7 @@
               </p>
               <div class="d-flex flex-wrap gap-2 small">
                 <span class="badge pin-adc">Eje X: contador + 50 (Avance horizontal)</span>
-                <span class="badge pin-pwr">Eje Y: (X × 0.2932) + 200 (Escalado de señal)</span>
+                <span class="badge pin-pwr">Eje Y: (X &times; 0.2932) + 200 (Escalado de señal)</span>
                 <span class="badge pin-warn">Borrador: if (contador &gt; 500) { contador = 0; }</span>
               </div>
             </div>
@@ -293,7 +310,7 @@
               <div class="p-2 rounded bg-card border border-secondary mt-3">
                 <small class="text-cyan d-block fw-bold"><i class="bi bi-info-circle me-1"></i> Regla de Tres del Escalado:</small>
                 <small class="text-mid-gray">
-                  La caja mide 300 píxeles de alto y el dato máximo es 1023. Al dividir <strong>300 ÷ 1023 = 0.2932</strong>, cualquier número cabe perfectamente dentro del marco sin salirse.
+                  La caja mide 300 píxeles de alto y el dato máximo es 1023. Al dividir <strong>300 &divide; 1023 = 0.2932</strong>, cualquier número cabe perfectamente dentro del marco sin salirse.
                 </small>
               </div>
             </div>
@@ -333,7 +350,7 @@
                   <h6 class="text-white mb-0" id="simStep2Title">La Altura (Eje Y)</h6>
                 </div>
                 <p class="small text-mid-gray mb-1" id="simStep2Desc">La variable X1 es un número de 0 a 1023. Lo adaptamos multiplicando por 0.2932:</p>
-                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simStep2Formula">Y = (X1 × 0.2932) + 200</span>
+                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simStep2Formula">Y = (X1 &times; 0.2932) + 200</span>
               </div>
             </div>
             <div class="col-md-4">
