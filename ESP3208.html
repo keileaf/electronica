@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP3208: Control de Motores DC con Driver L293D | ESP32 + Shield GVS</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --c-dark-gray: #7a7f87;
+      --c-mid-gray: #9aa0a8;
+      --c-blue-accent: #5aa9e6;
+      --c-blue-soft: #8ec8f2;
+      --c-cyan-light: #9fdfef;
+      --c-white: #f2f3f5;
+
+      --bg-main: #17181b;
+      --bg-sidebar: #17181b;
+      --bg-card: #1c1e22;
+      --bg-card-inner: #1c1e22;
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-main);
+      color: #e4e6e9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      min-height: 100vh;
+      letter-spacing: 0.1px;
+    }
+    main { max-width: 1180px; }
+    .sidebar {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+    }
+    @media (min-width: 992px) {
+      .sidebar { min-height: 100vh; position: sticky; top: 0; }
+    }
+    .activity-btn {
+      text-align: left;
+      border-radius: 6px;
+      padding: 9px 12px;
+      margin-bottom: 2px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      color: var(--c-mid-gray);
+      background: transparent;
+      border: 1px solid transparent;
+      border-left: 2px solid transparent;
+      width: 100%;
+      text-decoration: none;
+      display: block;
+    }
+    .activity-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--c-white);
+    }
+    .activity-btn.active {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--c-white);
+      border-left: 2px solid var(--c-blue-accent);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .code-box {
+      background-color: #131417;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--c-cyan-light);
+      position: relative;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+    .badge-board {
+      background-color: transparent;
+      color: var(--c-mid-gray);
+      border: none;
+      padding-left: 0;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .nav-pills .nav-link {
+      color: var(--c-mid-gray);
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-right: 14px;
+      margin-bottom: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      background-color: transparent;
+    }
+    .nav-pills .nav-link:hover {
+      color: var(--c-white);
+      border-bottom-color: var(--border-light);
+    }
+    .nav-pills .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      font-weight: 600;
+      border-bottom-color: var(--c-cyan-light);
+    }
+    .nav-tabs .nav-link {
+      color: var(--c-mid-gray);
+      border: 1px solid transparent;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      color: var(--c-cyan-light);
+      border-color: transparent transparent var(--c-cyan-light) transparent;
+      font-weight: 600;
+    }
+    .pin-adc, .pin-pwr, .pin-gnd, .pin-warn, .pin-comm, .pin-gpio {
+      background-color: transparent;
+      border: none;
+      padding: 2px 0;
+      font-weight: 600;
+    }
+    .pin-adc { color: var(--c-blue-soft); }
+    .pin-pwr { color: var(--c-dark-gray); }
+    .pin-gnd { color: #b6bcc4; }
+    .pin-warn { color: var(--c-cyan-light); }
+    .pin-comm { color: var(--c-blue-accent); }
+    .pin-gpio { color: var(--c-white); }
+
+    .diagram-viewport {
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 0;
+    }
+    .svg-container {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .text-cyan { color: var(--c-cyan-light) !important; }
+    .text-blue-light { color: var(--c-blue-soft) !important; }
+    .text-mid-gray { color: #a7acb4 !important; }
+
+    .step-card {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--c-blue-accent);
+      color: var(--c-white);
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+
+    .card { box-shadow: none !important; }
+    .row.g-3 { --bs-gutter-x: 1rem; --bs-gutter-y: 1rem; }
+
+    /* Rotación centrada con coordenadas exactas SVG */
+    .rotor-blade {
+      transform-box: view-box;
+      transition: transform 0.2s linear;
+    }
+    .spin-der {
+      animation: spinCW 0.45s linear infinite;
+    }
+    .spin-izq {
+      animation: spinCCW 0.45s linear infinite;
+    }
+    @keyframes spinCW {
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes spinCCW {
+      100% { transform: rotate(-360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- ================= SIDEBAR ================= -->
+      <nav class="col-lg-3 col-xl-2 d-block sidebar py-3 px-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+          <span class="fs-5 fw-bold text-white"><i class="bi bi-journal-code text-cyan me-2"></i>ESP32 Lab</span>
+          <a href="index.html" class="btn btn-sm btn-outline-light text-cyan border-secondary" title="Volver al Hub">
+            <i class="bi bi-arrow-left"></i> Hub
+          </a>
+        </div>
+
+        <small class="text-uppercase text-mid-gray fw-bold px-1 mb-2 d-block" style="font-size: 0.72rem; letter-spacing: 1px;">
+          Actividades ESP32
+        </small>
+
+        <div class="nav flex-column mb-3">
+          <a href="ESP3201.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3201</div>
+            <div style="font-size: 0.75rem;">Gráfico de Puntos (Processing)</div>
+          </a>
+          <a href="ESP3202.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3202</div>
+            <div style="font-size: 0.75rem;">Gráfico de Líneas Continuas</div>
+          </a>
+          <a href="ESP3203.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3203</div>
+            <div style="font-size: 0.75rem;">Lectura de Potenciómetros (ADC)</div>
+          </a>
+          <a href="ESP3204.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3204</div>
+            <div style="font-size: 0.75rem;">Osciloscopio Potenciómetro</div>
+          </a>
+          <a href="ESP3205.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3205</div>
+            <div style="font-size: 0.75rem;">Sensor DHT11 (Temp / Hum)</div>
+          </a>
+          <a href="ESP3206.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3206</div>
+            <div style="font-size: 0.75rem;">Sensor de Luz LDR (Fotorresistencia)</div>
+          </a>
+          <a href="ESP3207.html" class="activity-btn">
+            <div class="small fw-bold text-white">ESP3207</div>
+            <div style="font-size: 0.75rem;">Control de 2 LEDs (Processing &rarr; ESP32)</div>
+          </a>
+          <a href="ESP3208.html" class="activity-btn active">
+            <div class="small fw-bold text-white">ESP3208</div>
+            <div style="font-size: 0.75rem;">Control de Motor DC (L293D)</div>
+          </a>
+        </div>
+      </nav>
+
+      <!-- ================= CONTENIDO DE LA ACTIVIDAD ================= -->
+      <main class="col-lg-9 col-xl-10 px-3 px-md-4 py-3">
+        
+        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+          <div>
+            <span class="badge badge-board mb-1">Puente H / Aislamiento de Potencia / Control de Actuadores DC</span>
+            <h2 class="h3 fw-bold text-white mb-0">ESP3208: Control de Motores DC con Driver L293D</h2>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <span class="badge badge-board px-3 py-2 fs-6">
+              <i class="bi bi-gear-wide-connected me-1 text-cyan"></i> Processing (HMI) &rarr; ESP32 + L293D
+            </span>
+          </div>
+        </div>
+
+        <!-- TARJETA 1: MOTOR DE CORRIENTE DIRECTA (DC) -->
+        <div class="card bg-card border-secondary p-3 mb-3">
+          <div class="row align-items-center g-3">
+            <div class="col-md-3 col-lg-2 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100" height="100" style="background:transparent;">
+                <circle cx="60" cy="60" r="44" fill="#18191b" stroke="#44474f" stroke-width="2"/>
+                <circle cx="60" cy="60" r="34" fill="#202226" stroke="#33373d" stroke-width="1.5"/>
+                <path d="M 36,44 A 28,28 0 0 1 84,44" fill="none" stroke="#5aa9e6" stroke-width="3" stroke-linecap="round"/>
+                <polygon points="88,42 84,51 78,45" fill="#5aa9e6"/>
+                <path d="M 84,76 A 28,28 0 0 1 36,76" fill="none" stroke="#9fdfef" stroke-width="3" stroke-linecap="round"/>
+                <polygon points="32,78 36,69 42,75" fill="#9fdfef"/>
+                <circle cx="60" cy="60" r="9" fill="#cbd5e1"/>
+                <circle cx="60" cy="60" r="3.5" fill="#18191b"/>
+              </svg>
+            </div>
+            <div class="col-md-9 col-lg-10">
+              <h5 class="text-white mb-1">Motor de Corriente Directa (DC)</h5>
+              <p class="small text-mid-gray mb-2">
+                Un <strong>motor DC</strong> es un actuador electromagnético que convierte energía eléctrica en movimiento rotatorio continuo. Posee dos terminales: el sentido de giro (horario o antihorario) depende de la polaridad del voltaje aplicado en sus bornes (+ y -).
+              </p>
+              <p class="small text-mid-gray mb-2">
+                <strong>¿Por qué no va directo al ESP32?</strong> Un pin del microcontrolador solo entrega <strong>12 mA a 3.3V</strong>, mientras que un motor pequeño requiere entre <strong>200 mA y más de 800 mA a 5V</strong>. Conectarlo a un GPIO causaría la destrucción del puerto por sobrecorriente.
+              </p>
+              <div class="d-flex flex-wrap gap-2 small">
+                <span class="badge pin-warn">Tensión de Operación: 5V a 9V DC</span>
+                <span class="badge pin-pwr">Consumo de Corriente: 200 mA a 1A (en arranque)</span>
+                <span class="badge pin-adc">Inversión de Giro: Por conmutación de polaridad</span>
+                <span class="badge pin-gnd">Naturaleza: Carga Inductiva</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TARJETA 2: CIRCUITO INTEGRADO DRIVER L293D -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="row align-items-center g-3">
+            <div class="col-md-3 col-lg-2 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100" height="100" style="background:transparent;">
+                <rect x="25" y="32" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="37" y="32" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="49" y="32" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="61" y="32" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="73" y="32" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="85" y="32" width="6" height="5" fill="#cbd5e1"/>
+                
+                <rect x="20" y="37" width="80" height="46" rx="3" fill="#495057" stroke="#ced4da" stroke-width="1.5"/>
+                <path d="M 20,55 A 5,5 0 0,1 20,65" fill="#18191b"/>
+                <circle cx="28" cy="74" r="1.5" fill="#18191b"/>
+                <text x="60" y="64" fill="#212529" font-size="10" font-weight="bold" text-anchor="middle">L293D</text>
+
+                <rect x="25" y="83" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="37" y="83" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="49" y="83" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="61" y="83" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="73" y="83" width="6" height="5" fill="#cbd5e1"/>
+                <rect x="85" y="83" width="6" height="5" fill="#cbd5e1"/>
+              </svg>
+            </div>
+            <div class="col-md-9 col-lg-10">
+              <h5 class="text-white mb-1">Driver de Potencia L293D (Doble Puente H)</h5>
+              <p class="small text-mid-gray mb-2">
+                El <strong>L293D</strong> es un controlador de 16 terminales diseñado para manejar cargas inductivas en ambos sentidos mediante 4 medios puentes H integrados. Separa el circuito lógico del microcontrolador respecto a la etapa de alta potencia de los motores.
+              </p>
+              <ul class="small text-mid-gray mb-2 ps-3">
+                <li><strong>Fila Inferior (Pines 1 al 8):</strong> 1: ENABLE 1 | 2: INPUT 1 | 3: OUTPUT 1 | 4,5: GND | 6: OUTPUT 2 | 7: INPUT 2 | 8: VS (Potencia).</li>
+                <li><strong>Fila Superior (Pines 16 al 9):</strong> 16: VSS (Lógica 5V) | 15: INPUT 4 | 14: OUTPUT 4 | 13,12: GND | 11: OUTPUT 3 | 10: INPUT 3 | 9: ENABLE 2.</li>
+                <li><strong>Alimentación Unificada:</strong> Tanto <strong>VSS (16)</strong>, <strong>VS (8)</strong> como <strong>ENABLE 1 y 2 (1 y 9)</strong> se energizan desde la línea de <strong>5V del Shield</strong>.</li>
+              </ul>
+              <div class="d-flex flex-wrap gap-2 small">
+                <span class="badge pin-warn">Jumper Shield: Cambiar selector a 5V</span>
+                <span class="badge pin-pwr">Alimentación: 5V a Pines 1, 8, 9 y 16</span>
+                <span class="badge pin-adc">Entradas Lógicas: 3.3V / 5V (GPIO 18 y 19)</span>
+                <span class="badge pin-gnd">GND: Pines centrales 4, 5, 12, 13 a tierra común</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TARJETA DE REGLA DE ORO DE ALIMENTACIÓN -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-lightning-charge-fill text-warning fs-4 me-2"></i>
+            <h5 class="text-white mb-0">Configuración de Alimentación del Shield en 5V</h5>
+          </div>
+          <p class="small text-mid-gray mb-2">
+            Para que el driver L293D y el motor tengan corriente y voltaje adecuados directamente desde el Shield:
+          </p>
+          <div class="row g-2 small">
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-warning d-block mb-1"><i class="bi bi-toggle-on me-1"></i> Jumper en Posición 5V</strong>
+                <span class="text-mid-gray">Cambia el puente selector amarillo del Shield a <strong>5V</strong> para energizar las filas del riel 'V'.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-danger d-block mb-1"><i class="bi bi-plug-fill me-1"></i> Cableado de VS y VSS a 5V</strong>
+                <span class="text-mid-gray">Conecta tanto la patita 8 (VS) como la patita 16 (VSS) a la fila de <strong>5V (Riel V)</strong> del Shield.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 rounded bg-main border border-secondary h-100">
+                <strong class="text-cyan d-block mb-1"><i class="bi bi-link-45deg me-1"></i> Retorno GND Común</strong>
+                <span class="text-mid-gray">Las patitas centrales (4, 5, 12, 13) se unen en un único nodo y regresan limpiamente al <strong>Pin G (GND)</strong> del Shield.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestañas Parte A y B -->
+        <ul class="nav nav-pills mb-3" id="partTabs">
+          <li class="nav-item">
+            <button class="nav-link active" id="tabPartA" onclick="setPart('A')">Parte A: 1 Motor DC (3 Botones)</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tabPartB" onclick="setPart('B')">Parte B: 2 Motores DC (6 Botones - Reto de Conexión)</button>
+          </li>
+        </ul>
+
+        <!-- Ficha Técnica -->
+        <div class="row g-3 mb-4">
+          <div class="col-xl-7">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-white mb-0" id="diagramTitle"><i class="bi bi-diagram-3-fill text-cyan me-2"></i>Conexión del Driver L293D en Shield GVS</h6>
+                <span class="badge bg-secondary text-white" id="diagramBadge">Lógica &amp; Potencia: 5V</span>
+              </div>
+              <div class="diagram-viewport" id="svgContainer"></div>
+            </div>
+          </div>
+
+          <div class="col-xl-5">
+            <div class="card bg-dark border-secondary p-3 h-100">
+              <h6 class="text-white mb-2"><i class="bi bi-table text-cyan me-2"></i>Mapeo Eléctrico y Lógica del Puente H</h6>
+              <div class="table-responsive">
+                <table class="table table-dark table-bordered small align-middle mb-0">
+                  <thead class="table-secondary text-dark">
+                    <tr>
+                      <th>Terminal L293D</th>
+                      <th>Conexión en Shield</th>
+                      <th>Función / Estado</th>
+                      <th>Comando</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pinTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="p-2 rounded bg-card border border-secondary mt-3">
+                <small class="text-cyan d-block fw-bold"><i class="bi bi-info-circle me-1"></i> Tabla de Verdad del Giro:</small>
+                <small class="text-mid-gray">
+                  &bull; <strong>Giro Derecha:</strong> INPUT 1=LOW, INPUT 2=HIGH<br>
+                  &bull; <strong>Giro Izquierda:</strong> INPUT 1=HIGH, INPUT 2=LOW<br>
+                  &bull; <strong>Paro:</strong> INPUT 1=LOW, INPUT 2=LOW.
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIMULADOR DIDÁCTICO INTERACTIVO -->
+        <div class="card bg-card border-secondary p-3 mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+            <div>
+              <h5 class="text-white mb-0"><i class="bi bi-mouse2 text-cyan me-2"></i>Simulador Didáctico: Botonera de Control HMI y Rotor</h5>
+              <small class="text-mid-gray">Haz clic en cada botón para cambiar el estado. El motor permanece girando en esa dirección hasta pulsar <strong>PARO</strong>.</small>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">1</span>
+                  <h6 class="text-white mb-0">1. Detección de Clic</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">Se detecta el clic sobre las coordenadas del botón para enclavar el nuevo estado:</p>
+                <span class="badge pin-adc d-block text-center py-2 fs-6" id="simBadgeDetect">Enclavamiento de dirección activa</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">2</span>
+                  <h6 class="text-white mb-0">2. Envío Serial Continuo</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">La variable <code>x</code> retiene el comando y lo sigue enviando por USB:</p>
+                <span class="badge pin-pwr d-block text-center py-2 fs-6" id="simBadgeEnvio">miPuerto.write(x);</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="step-card h-100">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="step-number">3</span>
+                  <h6 class="text-white mb-0">3. Marcha Sostenida en L293D</h6>
+                </div>
+                <p class="small text-mid-gray mb-1">El ESP32 mantiene los niveles lógicos hasta recibir la orden de paro:</p>
+                <span class="badge pin-warn d-block text-center py-2 fs-6" id="simBadgeAccion">digitalWrite(IN1, ...); digitalWrite(IN2, ...);</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded bg-main border border-secondary" id="simPanelContainer"></div>
+        </div>
+
+        <!-- CÓDIGOS FUENTE -->
+        <div class="card bg-dark border-secondary p-3" id="codeSectionContainer">
+          <ul class="nav nav-tabs border-secondary mb-3" id="codeSourceTabs">
+            <li class="nav-item">
+              <button class="nav-link active" id="btnTabProcessing" onclick="switchCodeTab('processing')">
+                <i class="bi bi-display me-1"></i> Código Processing (Java)
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="btnTabArduino" onclick="switchCodeTab('arduino')">
+                <i class="bi bi-cpu me-1"></i> Código ESP32 (Arduino IDE)
+              </button>
+            </li>
+          </ul>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-mid-gray" id="codeDescription">Sketch a ejecutar en la computadora con Processing IDE</span>
+            <button class="btn btn-sm btn-outline-light text-cyan" onclick="copyCode()"><i class="bi bi-clipboard me-1"></i> Copiar Código Activo</button>
+          </div>
+
+          <pre class="code-box mb-0" id="codeBlock"><code>// Cargando código...</code></pre>
+        </div>
+
+        <!-- Mensaje de Reto para la Parte B -->
+        <div class="card bg-card border-secondary p-4 mt-3 d-none text-center" id="challengeNotice">
+          <i class="bi bi-trophy-fill text-warning fs-1 mb-2"></i>
+          <h5 class="text-white mb-1">Reto de Programación: Control Diferencial de 2 Motores DC</h5>
+          <p class="small text-mid-gray mb-0">
+            Para la Parte B no se proporcionan códigos. Basándote en la estructura de la Parte A, programa en Processing los <strong>6 botones interactivos</strong> (3 por motor) y en el ESP32 la lectura serial para comandar los pines <code>INPUT 1, INPUT 2, INPUT 3, INPUT 4</code> siguiendo el diagrama esquemático horizontal del L293D con sus patitas identificadas.
+          </p>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentPart = 'A';
+    let currentCodeTab = 'processing';
+
+    // Estados persistentes de giro
+    let stateMotorA = 'stop';
+    let stateMotorB1 = 'stop';
+    let stateMotorB2 = 'stop';
+
+    const codes = {
+      A: {
+        codeProcessing: 
+`// ==========================================================
+// ACTIVIDAD ESP3208 - PARTE A: CONTROL DE 1 MOTOR DC (CON MEMORIA)
+// 3 Botones: Izquierda (10), Derecha (11) y Paro (12)
+// Al hacer clic, el motor se queda girando hasta presionar PARO
+// ==========================================================
+
+import processing.serial.*;
+
+Serial miPuerto;
+
+int x = 12; // Variable que retiene el estado actual (12 = Paro por defecto)
+
+void setup()
+{
+  size(800, 600);
+  background(0, 0, 0);
+
+  // Configuración del puerto serial
+  printArray(Serial.list());
+  String nombrePuerto = Serial.list()[0]; // Selecciona el puerto COM de tu ESP32
+  miPuerto = new Serial(this, nombrePuerto, 115200);
+}
+
+void draw()
+{
+  background(0, 0, 0);
+
+  // Título
+  textSize(32);
+  fill(0, 255, 255);
+  text("Control de Motor DC con Driver L293D", 100, 80);
+
+  // ==================== BOTÓN 1: IZQUIERDA ====================
+  // Al hacer clic, se actualiza x y el motor se queda girando
+  if (mouseX > 100 && mouseX < 260 && mouseY > 220 && mouseY < 310 && mousePressed == true)
+  {
+    x = 10; // Código sostenido para GIRO IZQUIERDA
+  }
+
+  // ==================== BOTÓN 2: PARO (STOP) ====================
+  if (mouseX > 320 && mouseX < 480 && mouseY > 220 && mouseY < 310 && mousePressed == true)
+  {
+    x = 12; // Código sostenido para DETENER MOTOR
+  }
+
+  // ==================== BOTÓN 3: DERECHA ====================
+  if (mouseX > 540 && mouseX < 700 && mouseY > 220 && mouseY < 310 && mousePressed == true)
+  {
+    x = 11; // Código sostenido para GIRO DERECHA
+  }
+
+  // Dibujar los botones resaltando el que se encuentra activo
+  // Botón Izquierda
+  if (x == 10) fill(50, 150, 250);
+  else fill(100, 100, 100);
+  stroke(255, 255, 255);
+  rect(100, 220, 160, 90);
+
+  // Botón Paro
+  if (x == 12) fill(200, 50, 50);
+  else fill(100, 100, 100);
+  stroke(255, 255, 255);
+  rect(320, 220, 160, 90);
+
+  // Botón Derecha
+  if (x == 11) fill(50, 200, 100);
+  else fill(100, 100, 100);
+  stroke(255, 255, 255);
+  rect(540, 220, 160, 90);
+
+  // Envío serial sostenido del comando hacia Arduino / ESP32
+  miPuerto.write(x);
+
+  // Textos descriptivos de los botones
+  fill(255);
+  textSize(18);
+  text("IZQUIERDA", 125, 270);
+  text("DETENER", 355, 270);
+  text("DERECHA", 575, 270);
+
+  // Estado visual inferior
+  textSize(22);
+  fill(255, 255, 0);
+  if (x == 10) {
+    text("Estado Actual: Girando a la Izquierda (Comando 10)", 150, 420);
+  } else if (x == 11) {
+    text("Estado Actual: Girando a la Derecha (Comando 11)", 150, 420);
+  } else {
+    text("Estado Actual: Motor Detenido (Comando 12)", 190, 420);
+  }
+
+  delay(50);
+}`,
+
+        codeArduino: 
+`// ==========================================================
+// ACTIVIDAD ESP3208 - PARTE A: CONTROL DE 1 MOTOR DC (L293D)
+// Recibe comandos de Processing:
+// 10 = Giro Izquierda  |  11 = Giro Derecha  |  12 = Paro
+// Jumper del Shield colocado en posición 5V
+// ==========================================================
+
+const int pinIN1 = 18; // Conectado a INPUT 1 (Pin 2 L293D)
+const int pinIN2 = 19; // Conectado a INPUT 2 (Pin 7 L293D)
+
+void setup() {
+  pinMode(pinIN1, OUTPUT);
+  pinMode(pinIN2, OUTPUT);
+
+  // Inicialmente motor apagado
+  digitalWrite(pinIN1, LOW);
+  digitalWrite(pinIN2, LOW);
+
+  Serial.begin(115200); // Velocidad estándar con Processing
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    int comando = Serial.read();
+
+    if (comando == 10) {
+      // Giro Izquierda sostenido
+      digitalWrite(pinIN1, HIGH);
+      digitalWrite(pinIN2, LOW);
+    }
+    else if (comando == 11) {
+      // Giro Derecha sostenido
+      digitalWrite(pinIN1, LOW);
+      digitalWrite(pinIN2, HIGH);
+    }
+    else if (comando == 12) {
+      // Paro / Freno sostenido
+      digitalWrite(pinIN1, LOW);
+      digitalWrite(pinIN2, LOW);
+    }
+  }
+}`
+      }
+    };
+
+    function setPart(part) {
+      currentPart = part;
+      document.getElementById('tabPartA').classList.toggle('active', part === 'A');
+      document.getElementById('tabPartB').classList.toggle('active', part === 'B');
+      render();
+    }
+
+    function switchCodeTab(tab) {
+      currentCodeTab = tab;
+      document.getElementById('btnTabProcessing').classList.toggle('active', tab === 'processing');
+      document.getElementById('btnTabArduino').classList.toggle('active', tab === 'arduino');
+      
+      const act = codes.A;
+      if (tab === 'processing') {
+        document.getElementById('codeDescription').innerText = "Sketch a ejecutar en la computadora con Processing IDE (solo setup y draw)";
+        document.getElementById('codeBlock').innerText = act.codeProcessing;
+      } else {
+        document.getElementById('codeDescription').innerText = "Firmware a cargar en el ESP32 mediante Arduino IDE";
+        document.getElementById('codeBlock').innerText = act.codeArduino;
+      }
+    }
+
+    function render() {
+      const codeBoxContainer = document.getElementById('codeSectionContainer');
+      const challengeNotice = document.getElementById('challengeNotice');
+      const simContainer = document.getElementById('simPanelContainer');
+
+      if (currentPart === 'A') {
+        codeBoxContainer.classList.remove('d-none');
+        challengeNotice.classList.add('d-none');
+        switchCodeTab(currentCodeTab);
+
+        document.getElementById('diagramTitle').innerHTML = `<i class="bi bi-diagram-3-fill text-cyan me-2"></i> Conexión de 1 Motor DC con Driver L293D (Horizontal)`;
+        document.getElementById('diagramBadge').innerText = "Lógica & Potencia: 5V";
+
+        document.getElementById('pinTableBody').innerHTML = `
+          <tr>
+            <td class="text-white fw-bold">ENABLE 1 (Pin 1)</td>
+            <td>Pin V (Fila 18 / 5V)</td>
+            <td>Habilitación activa</td>
+            <td>5V Constante</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">INPUT 1 (Pin 2)</td>
+            <td>Pin S (Fila GPIO 18)</td>
+            <td>Sentido Motor 1</td>
+            <td><span class="badge bg-primary">10 (Izq)</span> / <span class="badge bg-secondary">11 (Der)</span></td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">OUTPUT 1 y 2 (Pines 3 y 6)</td>
+            <td>Bornes Motor 1</td>
+            <td>Alimentación a bobinas</td>
+            <td>Inversión polaridad</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">GND (Pines 4 y 5)</td>
+            <td>Pin G (GND común)</td>
+            <td>Retorno de tierra (0V)</td>
+            <td>Tierra Común</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">INPUT 2 (Pin 7)</td>
+            <td>Pin S (Fila GPIO 19)</td>
+            <td>Sentido Motor 1</td>
+            <td><span class="badge bg-secondary">10 (Izq)</span> / <span class="badge bg-success">11 (Der)</span></td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">VS (Pin 8)</td>
+            <td>Pin V (Fila 19 / 5V)</td>
+            <td>Potencia del motor a 5V</td>
+            <td>5V desde Shield</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">VSS (Pin 16)</td>
+            <td>Pin V (Fila 18 / 5V)</td>
+            <td>Lógica interna</td>
+            <td>5V desde Shield</td>
+          </tr>
+        `;
+
+        // SVG PARTE A: Centro geométrico exacto del motor en (575, 142)
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 630 330" preserveAspectRatio="xMidYMid meet" class="svg-container">
+            <!-- ESP32 SHIELD -->
+            <rect x="10" y="15" width="135" height="295" rx="8" fill="#202226" stroke="#44474f" stroke-width="1.5"/>
+            <text x="77" y="36" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">ESP32 SHIELD (G-V-S)</text>
+            
+            <rect x="16" y="52" width="123" height="95" rx="5" fill="#18191b" stroke="#33373d"/>
+            <text x="24" y="68" fill="#6bbef9" font-size="7.5" font-weight="bold">FILAS GPIO 18 Y 19</text>
+            
+            <circle cx="130" cy="85" r="4" fill="#ef4444"/><text x="122" y="88" fill="#ef4444" font-size="8" text-anchor="end">V (5V Riel)</text>
+            <circle cx="130" cy="112" r="4" fill="#38bdf8"/><text x="122" y="115" fill="#38bdf8" font-size="8" text-anchor="end">S (IO 18)</text>
+            <circle cx="130" cy="138" r="4" fill="#adb5bd"/><text x="122" y="141" fill="#adb5bd" font-size="8" text-anchor="end">G (GND)</text>
+
+            <rect x="16" y="165" width="123" height="55" rx="5" fill="#18191b" stroke="#33373d"/>
+            <circle cx="130" cy="195" r="4" fill="#38bdf8"/><text x="122" y="198" fill="#38bdf8" font-size="8" text-anchor="end">S (IO 19)</text>
+
+            <!-- L293D ENCAPSULADO HORIZONTAL (DIP-16) -->
+            <!-- Patitas Superiores (Pines 16 al 9: izq a der) -->
+            <g fill="#cbd5e1" stroke="#334155" stroke-width="1">
+              <rect x="250" y="98" width="13" height="12" rx="1"/>
+              <rect x="278" y="98" width="13" height="12" rx="1"/>
+              <rect x="306" y="98" width="13" height="12" rx="1"/>
+              <rect x="334" y="98" width="13" height="12" rx="1"/>
+              <rect x="362" y="98" width="13" height="12" rx="1"/>
+              <rect x="390" y="98" width="13" height="12" rx="1"/>
+              <rect x="418" y="98" width="13" height="12" rx="1"/>
+              <rect x="446" y="98" width="13" height="12" rx="1"/>
+            </g>
+
+            <!-- Cuerpo del Integrado Horizontal -->
+            <rect x="238" y="110" width="232" height="65" rx="4" fill="#495057" stroke="#ced4da" stroke-width="2"/>
+            <path d="M 238,135 A 7.5,7.5 0 0,1 238,150" fill="#212529"/>
+            <circle cx="256" cy="158" r="2.5" fill="#212529"/>
+            <text x="354" y="148" fill="#212529" font-size="15" font-weight="bold" text-anchor="middle">L293D</text>
+
+            <!-- Patitas Inferiores (Pines 1 al 8: izq a der) -->
+            <g fill="#cbd5e1" stroke="#334155" stroke-width="1">
+              <rect x="250" y="175" width="13" height="12" rx="1"/>
+              <rect x="278" y="175" width="13" height="12" rx="1"/>
+              <rect x="306" y="175" width="13" height="12" rx="1"/>
+              <rect x="334" y="175" width="13" height="12" rx="1"/>
+              <rect x="362" y="175" width="13" height="12" rx="1"/>
+              <rect x="390" y="175" width="13" height="12" rx="1"/>
+              <rect x="418" y="175" width="13" height="12" rx="1"/>
+              <rect x="446" y="175" width="13" height="12" rx="1"/>
+            </g>
+
+            <!-- Numeración de Patas -->
+            <g font-size="7" fill="#f8fafc" font-weight="bold" text-anchor="middle">
+              <text x="256" y="121">16</text><text x="284" y="121">15</text><text x="312" y="121">14</text><text x="340" y="121">13</text>
+              <text x="368" y="121">12</text><text x="396" y="121">11</text><text x="424" y="121">10</text><text x="452" y="121">9</text>
+              <text x="256" y="170">1</text><text x="284" y="170">2</text><text x="312" y="170">3</text><text x="340" y="170">4</text>
+              <text x="368" y="170">5</text><text x="396" y="170">6</text><text x="424" y="170">7</text><text x="452" y="170">8</text>
+            </g>
+
+            <!-- RUTEO ORTOGONAL -->
+            <path d="M 130,85 L 175,85 L 175,40 L 256,40 L 256,98" fill="none" stroke="#ef4444" stroke-width="2"/>
+            <path d="M 175,40 L 230,40 L 230,230 L 256,230 L 256,187" fill="none" stroke="#ef4444" stroke-width="2"/>
+            <path d="M 230,230 L 452,230 L 452,187" fill="none" stroke="#ef4444" stroke-width="2"/>
+            <text x="256" y="34" fill="#ef4444" font-size="7.5" font-weight="bold" text-anchor="middle">VSS (16): 5V</text>
+            <text x="256" y="242" fill="#ef4444" font-size="7.5" font-weight="bold" text-anchor="middle">EN1 (1): 5V</text>
+            <text x="452" y="242" fill="#ef4444" font-size="7.5" font-weight="bold" text-anchor="middle">VS (8): 5V</text>
+
+            <path d="M 130,112 L 188,112 L 188,212 L 284,212 L 284,187" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="284" y="222" fill="#38bdf8" font-size="7.5" font-weight="bold" text-anchor="middle">IN1 (2)</text>
+
+            <path d="M 130,195 L 202,195 L 202,222 L 424,222 L 424,187" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="424" y="232" fill="#38bdf8" font-size="7.5" font-weight="bold" text-anchor="middle">IN2 (7)</text>
+
+            <path d="M 130,138 L 216,138 L 216,202 L 340,202 L 340,187" fill="none" stroke="#adb5bd" stroke-width="2"/>
+            <path d="M 340,202 L 368,202 L 368,187" fill="none" stroke="#adb5bd" stroke-width="2"/>
+            <text x="354" y="213" fill="#adb5bd" font-size="7.5" font-weight="bold" text-anchor="middle">GND (4,5)</text>
+
+            <path d="M 312,187 L 312,275 L 565,275 L 565,190" fill="none" stroke="#fb923c" stroke-width="2.5"/>
+            <path d="M 396,187 L 396,260 L 585,260 L 585,190" fill="none" stroke="#fb923c" stroke-width="2.5"/>
+            <text x="312" y="286" fill="#fb923c" font-size="7" font-weight="bold" text-anchor="middle">OUT1 (3)</text>
+            <text x="396" y="271" fill="#fb923c" font-size="7" font-weight="bold" text-anchor="middle">OUT2 (6)</text>
+
+            <!-- Motor 1 con rotor perfectamente simétrico y centrado en (575, 142) -->
+            <circle cx="575" cy="142" r="32" fill="#202226" stroke="#44474f" stroke-width="2"/>
+            <circle cx="575" cy="142" r="22" fill="#18191b" stroke="#33373d" stroke-width="1.5"/>
+
+            <g id="svgRotorA" class="rotor-blade" style="transform-origin: 575px 142px;">
+              <rect x="572" y="124" width="6" height="36" rx="2" fill="#5aa9e6"/>
+              <rect x="557" y="139" width="36" height="6" rx="2" fill="#5aa9e6"/>
+              <circle cx="575" cy="128" r="2.5" fill="#fef08a"/>
+            </g>
+            <circle cx="575" cy="142" r="6" fill="#cbd5e1"/>
+            <text x="575" y="100" fill="#ffffff" font-size="8.5" font-weight="bold" text-anchor="middle">MOTOR 1</text>
+          </svg>
+        `;
+
+        // Simulador interactivo con animación SVG en motor inferior centrada en (50, 50)
+        simContainer.innerHTML = `
+          <div class="row align-items-center g-3">
+            <div class="col-md-6 text-center">
+              <small class="text-mid-gray d-block mb-2 fw-bold">BOTONERA DE PROCESSING (Haz clic para activar):</small>
+              <div class="d-flex justify-content-center gap-2">
+                <button id="simBtnIzq" class="btn btn-secondary px-3 py-3 fw-bold border-light" 
+                        onclick="fijarMotorA('izq')">
+                  <i class="bi bi-arrow-left-circle me-1"></i> IZQUIERDA<br><small class="fw-normal">(Comando 10)</small>
+                </button>
+                <button id="simBtnStop" class="btn btn-danger px-3 py-3 fw-bold border-light" 
+                        onclick="fijarMotorA('stop')">
+                  <i class="bi bi-stop-circle me-1"></i> PARO<br><small class="fw-normal">(Comando 12)</small>
+                </button>
+                <button id="simBtnDer" class="btn btn-secondary px-3 py-3 fw-bold border-light" 
+                        onclick="fijarMotorA('der')">
+                  <i class="bi bi-arrow-right-circle me-1"></i> DERECHA<br><small class="fw-normal">(Comando 11)</small>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6 text-center">
+              <small class="text-mid-gray d-block mb-2 fw-bold">ESTADO FÍSICO DEL ROTOR:</small>
+              <div class="p-3 rounded bg-card border border-secondary text-center d-flex flex-column align-items-center justify-content-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="85" height="85" class="mb-2">
+                  <circle cx="50" cy="50" r="44" fill="#202226" stroke="#44474f" stroke-width="2.5"/>
+                  <circle cx="50" cy="50" r="32" fill="#18191b" stroke="#33373d" stroke-width="2"/>
+                  <!-- Rotor centrado simétricamente respecto a (50, 50) -->
+                  <g id="simRotorBottomA" class="rotor-blade" style="transform-origin: 50px 50px;">
+                    <rect x="47" y="25" width="6" height="50" rx="3" fill="#5aa9e6"/>
+                    <rect x="25" y="47" width="50" height="6" rx="3" fill="#5aa9e6"/>
+                    <circle cx="50" cy="30" r="3" fill="#fef08a"/>
+                  </g>
+                  <circle cx="50" cy="50" r="8" fill="#cbd5e1"/>
+                  <circle cx="50" cy="50" r="3" fill="#18191b"/>
+                </svg>
+                <div class="fw-bold text-white fs-5 mb-1" id="simTxtMotorA"><i class="bi bi-pause-circle text-secondary me-1"></i> Motor 1 Detenido</div>
+                <small class="text-mid-gray d-block" id="simDetalleMotorA">INPUT 1 = LOW (0V) | INPUT 2 = LOW (0V)</small>
+              </div>
+            </div>
+          </div>
+        `;
+
+        actualizarVisualMotorA();
+
+      } else {
+        codeBoxContainer.classList.add('d-none');
+        challengeNotice.classList.remove('d-none');
+
+        document.getElementById('diagramTitle').innerHTML = `<i class="bi bi-diagram-3-fill text-cyan me-2"></i> Reto: Diagrama Esquemático de 2 Motores DC (L293D Horizontal)`;
+        document.getElementById('diagramBadge').innerText = "Ambos Canales Activos (Pwm 1 y Pwm 2)";
+
+        document.getElementById('pinTableBody').innerHTML = `
+          <tr>
+            <td class="text-white fw-bold">Motor 1 (Izquierdo)</td>
+            <td>INPUT 1 (Pin 2) y INPUT 2 (Pin 7)</td>
+            <td>Control sentido con OUT 1 y 2</td>
+            <td><span class="badge bg-primary">10 (Izq)</span> / <span class="badge bg-success">11 (Der)</span> / <span class="badge bg-secondary">12 (Paro)</span></td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">Motor 2 (Derecho)</td>
+            <td>INPUT 3 (Pin 10) y INPUT 4 (Pin 15)</td>
+            <td>Control sentido con OUT 3 y 4</td>
+            <td><span class="badge bg-primary">20 (Izq)</span> / <span class="badge bg-success">21 (Der)</span> / <span class="badge bg-secondary">22 (Paro)</span></td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">Habilitaciones ENABLE 1 y 2</td>
+            <td>Pin 1 (Pwm 1) y Pin 9 (Pwm 2)</td>
+            <td>Habilitación a 5V (o señales PWM del ESP32)</td>
+            <td>Activa marcha</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">VSS (Pin 16)</td>
+            <td>Riel V (5V del Shield)</td>
+            <td>Lógica interna del chip</td>
+            <td>5V a 7V DC</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">VS (Pin 8)</td>
+            <td>Riel V (5V del Shield) o Batería</td>
+            <td>Alimentación de motores</td>
+            <td>5V DC</td>
+          </tr>
+          <tr>
+            <td class="text-white fw-bold">GND Centrales (4, 5, 12, 13)</td>
+            <td>Pin G (GND común del Shield)</td>
+            <td>Tierra común unificada (N GND)</td>
+            <td>0V común</td>
+          </tr>
+        `;
+
+        // SVG PARTE B: Centros exactos en (70, 146) y (550, 146)
+        document.getElementById('svgContainer').innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 320" preserveAspectRatio="xMidYMid meet" class="svg-container">
+            <!-- L293D DIP-16 Horizontal Central -->
+            <g fill="#cbd5e1" stroke="#334155" stroke-width="1">
+              <rect x="207" y="100" width="14" height="12" rx="1"/>
+              <rect x="237" y="100" width="14" height="12" rx="1"/>
+              <rect x="267" y="100" width="14" height="12" rx="1"/>
+              <rect x="297" y="100" width="14" height="12" rx="1"/>
+              <rect x="327" y="100" width="14" height="12" rx="1"/>
+              <rect x="357" y="100" width="14" height="12" rx="1"/>
+              <rect x="387" y="100" width="14" height="12" rx="1"/>
+              <rect x="417" y="100" width="14" height="12" rx="1"/>
+            </g>
+
+            <rect x="195" y="112" width="250" height="70" rx="4" fill="#495057" stroke="#ced4da" stroke-width="2"/>
+            <path d="M 195,139 A 8,8 0 0,1 195,155" fill="#212529"/>
+            <circle cx="214" cy="163" r="2.5" fill="#212529"/>
+            <text x="320" y="152" fill="#212529" font-size="16" font-weight="bold" text-anchor="middle">L293D</text>
+
+            <g fill="#cbd5e1" stroke="#334155" stroke-width="1">
+              <rect x="207" y="182" width="14" height="12" rx="1"/>
+              <rect x="237" y="182" width="14" height="12" rx="1"/>
+              <rect x="267" y="182" width="14" height="12" rx="1"/>
+              <rect x="297" y="182" width="14" height="12" rx="1"/>
+              <rect x="327" y="182" width="14" height="12" rx="1"/>
+              <rect x="357" y="182" width="14" height="12" rx="1"/>
+              <rect x="387" y="182" width="14" height="12" rx="1"/>
+              <rect x="417" y="182" width="14" height="12" rx="1"/>
+            </g>
+
+            <g font-size="7" fill="#f8fafc" font-weight="bold" text-anchor="middle">
+              <text x="214" y="123">16</text><text x="244" y="123">15</text><text x="274" y="123">14</text><text x="304" y="123">13</text>
+              <text x="334" y="123">12</text><text x="364" y="123">11</text><text x="394" y="123">10</text><text x="424" y="123">9</text>
+              <text x="214" y="176">1</text><text x="244" y="176">2</text><text x="274" y="176">3</text><text x="304" y="176">4</text>
+              <text x="334" y="176">5</text><text x="364" y="176">6</text><text x="394" y="176">7</text><text x="424" y="176">8</text>
+            </g>
+
+            <!-- CANAL 1 (MOTOR 1 - IZQUIERDA): Pines 1, 2, 3, 6, 7 -->
+            <path d="M 214,194 L 214,235 L 160,235" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <text x="150" y="238" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="end">Pwm 1 (1)</text>
+
+            <path d="M 244,194 L 244,220 L 160,220" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="150" y="223" fill="#38bdf8" font-size="7.5" font-weight="bold" text-anchor="end">A0 / IN1 (2)</text>
+
+            <path d="M 394,194 L 394,250 L 160,250" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="150" y="253" fill="#38bdf8" font-size="7.5" font-weight="bold" text-anchor="end">A1 / IN2 (7)</text>
+
+            <path d="M 274,194 L 274,265 L 80,265 L 80,180" fill="none" stroke="#fb923c" stroke-width="2.5"/>
+            <path d="M 364,194 L 364,280 L 60,280 L 60,180" fill="none" stroke="#fb923c" stroke-width="2.5"/>
+            <text x="274" y="275" fill="#fb923c" font-size="6.5" font-weight="bold" text-anchor="middle">OUT1(3)</text>
+            <text x="364" y="290" fill="#fb923c" font-size="6.5" font-weight="bold" text-anchor="middle">OUT2(6)</text>
+
+            <!-- Motor 1 (Izquierdo) centrado en (70, 146) -->
+            <circle cx="70" cy="146" r="26" fill="#202226" stroke="#44474f" stroke-width="2"/>
+            <g id="svgRotorB1" class="rotor-blade" style="transform-origin: 70px 146px;">
+              <rect x="68" y="130" width="4" height="32" rx="1.5" fill="#ef4444"/>
+              <rect x="54" y="144" width="32" height="4" rx="1.5" fill="#ef4444"/>
+              <circle cx="70" cy="133" r="2" fill="#fef08a"/>
+            </g>
+            <circle cx="70" cy="146" r="5" fill="#cbd5e1"/>
+            <text x="70" y="108" fill="#ffffff" font-size="8.5" font-weight="bold" text-anchor="middle">M1 (IZQ)</text>
+
+            <!-- CANAL 2 (MOTOR 2 - DERECHA): Pines 9, 10, 11, 14, 15 -->
+            <path d="M 424,100 L 424,65 L 480,65" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <text x="490" y="68" fill="#ffffff" font-size="7.5" font-weight="bold">Pwm 2 (9)</text>
+
+            <path d="M 394,100 L 394,80 L 480,80" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="490" y="83" fill="#38bdf8" font-size="7.5" font-weight="bold">A3 / IN3 (10)</text>
+
+            <path d="M 244,100 L 244,50 L 480,50" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="490" y="53" fill="#38bdf8" font-size="7.5" font-weight="bold">A2 / IN4 (15)</text>
+
+            <path d="M 364,100 L 364,35 L 540,35 L 540,110" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+            <path d="M 274,100 L 274,20 L 560,20 L 560,110" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+            <text x="364" y="30" fill="#4ade80" font-size="6.5" font-weight="bold" text-anchor="middle">OUT3(11)</text>
+            <text x="274" y="16" fill="#4ade80" font-size="6.5" font-weight="bold" text-anchor="middle">OUT4(14)</text>
+
+            <!-- Motor 2 (Derecho) centrado en (550, 146) -->
+            <circle cx="550" cy="146" r="26" fill="#202226" stroke="#44474f" stroke-width="2"/>
+            <g id="svgRotorB2" class="rotor-blade" style="transform-origin: 550px 146px;">
+              <rect x="548" y="130" width="4" height="32" rx="1.5" fill="#22c55e"/>
+              <rect x="534" y="144" width="32" height="4" rx="1.5" fill="#22c55e"/>
+              <circle cx="550" cy="133" r="2" fill="#fef08a"/>
+            </g>
+            <circle cx="550" cy="146" r="5" fill="#cbd5e1"/>
+            <text x="550" y="190" fill="#ffffff" font-size="8.5" font-weight="bold" text-anchor="middle">M2 (DER)</text>
+
+            <!-- ALIMENTACIÓN Y TIERRAS -->
+            <path d="M 214,100 L 214,35 L 180,35" fill="none" stroke="#ef4444" stroke-width="2"/>
+            <text x="170" y="38" fill="#ef4444" font-size="7.5" font-weight="bold" text-anchor="end">5V / VSS (16)</text>
+
+            <path d="M 424,194 L 424,235 L 450,235" fill="none" stroke="#ef4444" stroke-width="2"/>
+            <text x="455" y="238" fill="#ef4444" font-size="7.5" font-weight="bold">5V / VS (8)</text>
+
+            <path d="M 304,194 L 304,215 L 334,215 L 334,194" fill="none" stroke="#adb5bd" stroke-width="1.8"/>
+            <path d="M 304,100 L 304,85 L 334,85 L 334,100" fill="none" stroke="#adb5bd" stroke-width="1.8"/>
+            <path d="M 319,215 L 319,295" fill="none" stroke="#adb5bd" stroke-width="2"/>
+            <path d="M 319,85 L 319,70 L 190,70 L 190,295 L 319,295" fill="none" stroke="#adb5bd" stroke-width="2"/>
+            
+            <line x1="309" y1="295" x2="329" y2="295" stroke="#adb5bd" stroke-width="2.5"/>
+            <line x1="312" y1="299" x2="326" y2="299" stroke="#adb5bd" stroke-width="1.8"/>
+            <line x1="315" y1="303" x2="323" y2="303" stroke="#adb5bd" stroke-width="1.2"/>
+            <text x="319" y="316" fill="#adb5bd" font-size="8" font-weight="bold" text-anchor="middle">N gnd</text>
+          </svg>
+        `;
+
+        // Simulador de 6 botones Parte B con memoria y mini motores centrados en (40, 40)
+        simContainer.innerHTML = `
+          <div class="row g-3">
+            <div class="col-md-6 border-end border-secondary text-center">
+              <small class="text-cyan d-block mb-2 fw-bold">MOTOR 1 (CANAL IZQUIERDO):</small>
+              <div class="d-flex justify-content-center gap-2 mb-2">
+                <button id="simBtnB1_izq" class="btn btn-sm btn-secondary fw-bold" onclick="fijarMotorB(1, 'izq')">
+                  <i class="bi bi-arrow-left"></i> IZQ (10)
+                </button>
+                <button id="simBtnB1_stop" class="btn btn-sm btn-danger fw-bold" onclick="fijarMotorB(1, 'stop')">
+                  PARO (12)
+                </button>
+                <button id="simBtnB1_der" class="btn btn-sm btn-secondary fw-bold" onclick="fijarMotorB(1, 'der')">
+                  DER (11) <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+              <div class="d-flex justify-content-center my-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="60" height="60">
+                  <circle cx="40" cy="40" r="36" fill="#202226" stroke="#44474f" stroke-width="2"/>
+                  <circle cx="40" cy="40" r="26" fill="#18191b" stroke="#33373d" stroke-width="1.5"/>
+                  <g id="simRotorBottomB1" class="rotor-blade" style="transform-origin: 40px 40px;">
+                    <rect x="37" y="18" width="6" height="44" rx="2" fill="#ef4444"/>
+                    <rect x="18" y="37" width="44" height="6" rx="2" fill="#ef4444"/>
+                    <circle cx="40" cy="22" r="2.5" fill="#fef08a"/>
+                  </g>
+                  <circle cx="40" cy="40" r="7" fill="#cbd5e1"/>
+                  <circle cx="40" cy="40" r="2.5" fill="#18191b"/>
+                </svg>
+              </div>
+              <small class="text-mid-gray fw-bold" id="simTxtB1">M1: Detenido</small>
+            </div>
+
+            <div class="col-md-6 text-center">
+              <small class="text-success d-block mb-2 fw-bold">MOTOR 2 (CANAL DERECHO):</small>
+              <div class="d-flex justify-content-center gap-2 mb-2">
+                <button id="simBtnB2_izq" class="btn btn-sm btn-secondary fw-bold" onclick="fijarMotorB(2, 'izq')">
+                  <i class="bi bi-arrow-left"></i> IZQ (20)
+                </button>
+                <button id="simBtnB2_stop" class="btn btn-sm btn-danger fw-bold" onclick="fijarMotorB(2, 'stop')">
+                  PARO (22)
+                </button>
+                <button id="simBtnB2_der" class="btn btn-sm btn-secondary fw-bold" onclick="fijarMotorB(2, 'der')">
+                  DER (21) <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+              <div class="d-flex justify-content-center my-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="60" height="60">
+                  <circle cx="40" cy="40" r="36" fill="#202226" stroke="#44474f" stroke-width="2"/>
+                  <circle cx="40" cy="40" r="26" fill="#18191b" stroke="#33373d" stroke-width="1.5"/>
+                  <g id="simRotorBottomB2" class="rotor-blade" style="transform-origin: 40px 40px;">
+                    <rect x="37" y="18" width="6" height="44" rx="2" fill="#22c55e"/>
+                    <rect x="18" y="37" width="44" height="6" rx="2" fill="#22c55e"/>
+                    <circle cx="40" cy="22" r="2.5" fill="#fef08a"/>
+                  </g>
+                  <circle cx="40" cy="40" r="7" fill="#cbd5e1"/>
+                  <circle cx="40" cy="40" r="2.5" fill="#18191b"/>
+                </svg>
+              </div>
+              <small class="text-mid-gray fw-bold" id="simTxtB2">M2: Detenido</small>
+            </div>
+          </div>
+        `;
+
+        actualizarVisualMotorB(1);
+        actualizarVisualMotorB(2);
+      }
+    }
+
+    // Control persistente Parte A
+    function fijarMotorA(dir) {
+      stateMotorA = dir;
+      actualizarVisualMotorA();
+    }
+
+    function actualizarVisualMotorA() {
+      const rotorTop = document.getElementById('svgRotorA');
+      const rotorBottom = document.getElementById('simRotorBottomA');
+      const txt = document.getElementById('simTxtMotorA');
+      const det = document.getElementById('simDetalleMotorA');
+      const badgeEnvio = document.getElementById('simBadgeEnvio');
+      const badgeAccion = document.getElementById('simBadgeAccion');
+
+      const btnIzq = document.getElementById('simBtnIzq');
+      const btnStop = document.getElementById('simBtnStop');
+      const btnDer = document.getElementById('simBtnDer');
+
+      if (!rotorTop || !rotorBottom) return;
+
+      rotorTop.classList.remove('spin-der', 'spin-izq');
+      rotorBottom.classList.remove('spin-der', 'spin-izq');
+
+      if (btnIzq) btnIzq.className = (stateMotorA === 'izq') ? "btn btn-primary px-3 py-3 fw-bold border-light shadow" : "btn btn-secondary px-3 py-3 fw-bold border-light";
+      if (btnStop) btnStop.className = (stateMotorA === 'stop') ? "btn btn-danger px-3 py-3 fw-bold border-light shadow" : "btn btn-outline-danger px-3 py-3 fw-bold border-light";
+      if (btnDer) btnDer.className = (stateMotorA === 'der') ? "btn btn-success px-3 py-3 fw-bold border-light shadow" : "btn btn-secondary px-3 py-3 fw-bold border-light";
+
+      if (stateMotorA === 'izq') {
+        rotorTop.classList.add('spin-izq');
+        rotorBottom.classList.add('spin-izq');
+        txt.innerHTML = `<i class="bi bi-arrow-counterclockwise text-cyan me-1"></i> Girando a la Izquierda`;
+        det.innerText = "INPUT 1 = HIGH (5V) | INPUT 2 = LOW (0V) -> GIRO ACTIVO";
+        badgeEnvio.innerText = "miPuerto.write(10); // Código Izquierda";
+        badgeAccion.innerText = "digitalWrite(18, HIGH); digitalWrite(19, LOW);";
+      } else if (stateMotorA === 'der') {
+        rotorTop.classList.add('spin-der');
+        rotorBottom.classList.add('spin-der');
+        txt.innerHTML = `<i class="bi bi-arrow-clockwise text-success me-1"></i> Girando a la Derecha`;
+        det.innerText = "INPUT 1 = LOW (0V) | INPUT 2 = HIGH (5V) -> GIRO ACTIVO";
+        badgeEnvio.innerText = "miPuerto.write(11); // Código Derecha";
+        badgeAccion.innerText = "digitalWrite(18, LOW); digitalWrite(19, HIGH);";
+      } else {
+        txt.innerHTML = `<i class="bi bi-pause-circle text-secondary me-1"></i> Motor Detenido`;
+        det.innerText = "INPUT 1 = LOW (0V) | INPUT 2 = LOW (0V) -> FRENO";
+        badgeEnvio.innerText = "miPuerto.write(12); // Código Paro";
+        badgeAccion.innerText = "digitalWrite(18, LOW); digitalWrite(19, LOW);";
+      }
+    }
+
+    // Control persistente Parte B
+    function fijarMotorB(motor, dir) {
+      if (motor === 1) stateMotorB1 = dir;
+      else stateMotorB2 = dir;
+      actualizarVisualMotorB(motor);
+    }
+
+    function actualizarVisualMotorB(motor) {
+      const state = (motor === 1) ? stateMotorB1 : stateMotorB2;
+      const rotorTop = document.getElementById(motor === 1 ? 'svgRotorB1' : 'svgRotorB2');
+      const rotorBottom = document.getElementById(motor === 1 ? 'simRotorBottomB1' : 'simRotorBottomB2');
+      const txt = document.getElementById(motor === 1 ? 'simTxtB1' : 'simTxtB2');
+
+      const btnIzq = document.getElementById(motor === 1 ? 'simBtnB1_izq' : 'simBtnB2_izq');
+      const btnStop = document.getElementById(motor === 1 ? 'simBtnB1_stop' : 'simBtnB2_stop');
+      const btnDer = document.getElementById(motor === 1 ? 'simBtnB1_der' : 'simBtnB2_der');
+
+      if (!rotorTop || !rotorBottom) return;
+
+      rotorTop.classList.remove('spin-der', 'spin-izq');
+      rotorBottom.classList.remove('spin-der', 'spin-izq');
+
+      if (btnIzq) btnIzq.className = (state === 'izq') ? "btn btn-sm btn-primary fw-bold" : "btn btn-sm btn-secondary fw-bold";
+      if (btnStop) btnStop.className = (state === 'stop') ? "btn btn-sm btn-danger fw-bold" : "btn btn-sm btn-outline-danger fw-bold";
+      if (btnDer) btnDer.className = (state === 'der') ? "btn btn-sm btn-success fw-bold" : "btn btn-sm btn-secondary fw-bold";
+
+      if (state === 'izq') {
+        rotorTop.classList.add('spin-izq');
+        rotorBottom.classList.add('spin-izq');
+        txt.innerText = `M${motor}: Girando Izquierda (Comando ${motor === 1 ? '10' : '20'})`;
+        txt.className = "text-cyan fw-bold";
+      } else if (state === 'der') {
+        rotorTop.classList.add('spin-der');
+        rotorBottom.classList.add('spin-der');
+        txt.innerText = `M${motor}: Girando Derecha (Comando ${motor === 1 ? '11' : '21'})`;
+        txt.className = "text-success fw-bold";
+      } else {
+        txt.innerText = `M${motor}: Detenido (Comando ${motor === 1 ? '12' : '22'})`;
+        txt.className = "text-mid-gray fw-bold";
+      }
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeBlock').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Código copiado al portapapeles con éxito');
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
